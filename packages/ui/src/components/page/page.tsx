@@ -130,7 +130,7 @@ const Root = ({
   return (
     <PageScrollableContext.Provider value={!!scrollable}>
       <SandboxLayout.Main className={cn('min-h-0', { 'overflow-auto': scrollable }, mainClassName)}>
-        <SandboxLayout.Content className={cn('min-h-0', { '!py-0': scrollable }, contentClassName)}>
+        <SandboxLayout.Content className={cn('min-h-0', { '!py-0 pb-[100vh] mb-[-100vh]': scrollable }, contentClassName)}>
           {children}
         </SandboxLayout.Content>
       </SandboxLayout.Main>
@@ -138,10 +138,9 @@ const Root = ({
   )
 }
 
-const Content = ({ children, className }: { children: ReactNode; className?: string }) => {
-  const scrollable = usePageScrollable()
-  return <div className={cn(scrollable ? 'min-h-full' : 'min-h-0', 'flex-1', className)}>{children}</div>
-}
+const Content = ({ children, className }: { children: ReactNode; className?: string }) => (
+  <div className={cn('min-h-0 flex-1', className)}>{children}</div>
+)
 
 export const Page = {
   Root,
