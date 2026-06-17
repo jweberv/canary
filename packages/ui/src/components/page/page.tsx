@@ -50,6 +50,7 @@ const Header: FC<PageHeaderProps> = ({
   actions,
   headerActions
 }) => {
+  const scrollable = usePageScrollable()
   const titleElement =
     typeof title === 'string' ? (
       <Text as="h1" variant="heading-section" truncate>
@@ -60,7 +61,14 @@ const Header: FC<PageHeaderProps> = ({
     )
 
   return (
-    <Layout.Vertical gap="md" className={cn('w-full', children ? 'mb-cn-md' : 'mb-cn-2xl')}>
+    <Layout.Vertical
+      gap="md"
+      className={cn(
+        'w-full',
+        children ? 'mb-cn-md' : 'mb-cn-2xl',
+        scrollable && 'sticky top-0 z-10 bg-cn-1 pt-[var(--cn-page-container-spacing-py)]'
+      )}
+    >
       {(!!backLink || !!headerActions) && (
         <Layout.Horizontal className="h-cn-9">
           {!!backLink && (
@@ -106,8 +114,8 @@ Header.displayName = 'PageHeader'
 
 const PageScrollableContext = createContext(false)
 
-// min-h-0 on each flex ancestor overrides the implicit min-height:auto so children can shrink below content size.
-// scrollable adds overflow containment and propagates to Page.Content via context.
+export const usePageScrollable = () => useContext(PageScrollableContext)
+
 const Root = ({
   children,
   scrollable,
@@ -121,8 +129,8 @@ const Root = ({
 }) => {
   return (
     <PageScrollableContext.Provider value={!!scrollable}>
-      <SandboxLayout.Main className={cn('min-h-0', { 'overflow-hidden': scrollable }, mainClassName)}>
-        <SandboxLayout.Content className={cn('min-h-0', { 'overflow-hidden': scrollable }, contentClassName)}>
+      <SandboxLayout.Main className={cn('min-h-0', { 'overflow-auto': scrollable }, mainClassName)}>
+        <SandboxLayout.Content className={cn('min-h-0', { '!py-0': scrollable }, contentClassName)}>
           {children}
         </SandboxLayout.Content>
       </SandboxLayout.Main>
@@ -130,12 +138,9 @@ const Root = ({
   )
 }
 
-// flex-1 fills available height in the parent flex column; min-h-0 allows shrinking.
-// Inherits scrollable from Page.Root via context.
 const Content = ({ children, className }: { children: ReactNode; className?: string }) => {
-  const scrollable = useContext(PageScrollableContext)
-
-  return <div className={cn('min-h-0 flex-1', { 'overflow-auto': scrollable }, className)}>{children}</div>
+  const scrollable = usePageScrollable()
+  return <div className={cn(scrollable ? 'min-h-full' : 'min-h-0', 'flex-1', className)}>{children}</div>
 }
 
 export const Page = {
