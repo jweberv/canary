@@ -66,7 +66,10 @@ const Header: FC<PageHeaderProps> = ({
       className={cn(
         'w-full',
         children ? 'mb-cn-md' : 'mb-cn-2xl',
-        scrollable && 'sticky top-0 z-10 bg-cn-1 pt-[var(--cn-page-container-spacing-py)]'
+        // In scrollable mode, Page.Root uses `display: contents` on the wrapper,
+        // so this header must own its own padding and sticky positioning.
+        scrollable &&
+          'sticky top-0 z-10 bg-cn-1 pt-[var(--cn-page-container-spacing-py)] px-[var(--cn-page-container-spacing-px)]'
       )}
     >
       {(!!backLink || !!headerActions) && (
@@ -116,6 +119,18 @@ const PageScrollableContext = createContext(false)
 
 export const usePageScrollable = () => useContext(PageScrollableContext)
 
+/**
+ * When `scrollable` is true, Page.Root enables full-page scroll with a sticky header:
+ *
+ * - SandboxLayout.Main becomes the scroll container (overflow-auto).
+ * - SandboxLayout.Content uses `display: contents` to remove itself from the layout,
+ *   allowing Page.Header/Page.HeaderV2 to stick directly within the scroll container.
+ *   Without this, sticky is constrained by the Content wrapper's height.
+ * - Page.Header/HeaderV2 own top + horizontal padding and sticky positioning.
+ * - Page.Content owns horizontal + top padding, plus a bottom spacer element.
+ *   The spacer must be a block-flow child (not padding/margin) because padding and margin
+ *   on direct flex children of overflow-auto containers don't extend scroll height.
+ */
 const Root = ({
   children,
   scrollable,
@@ -129,8 +144,10 @@ const Root = ({
 }) => {
   return (
     <PageScrollableContext.Provider value={!!scrollable}>
-      <SandboxLayout.Main className={cn('min-h-0', { 'overflow-auto': scrollable }, mainClassName)}>
-        <SandboxLayout.Content className={cn('min-h-0', { '!py-0 pb-[100vh] mb-[-100vh]': scrollable }, contentClassName)}>
+      <SandboxLayout.Main className={cn('min-h-0', scrollable && 'overflow-auto', mainClassName)}>
+        {/* `contents` removes this element's box so children participate directly in Main's flex layout.
+            `!p-0` overrides the padding from cn-sandbox-layout-content (applied via tailwind plugin). */}
+        <SandboxLayout.Content className={cn('min-h-0', { 'contents !p-0': scrollable }, contentClassName)}>
           {children}
         </SandboxLayout.Content>
       </SandboxLayout.Main>
@@ -138,9 +155,28 @@ const Root = ({
   )
 }
 
-const Content = ({ children, className }: { children: ReactNode; className?: string }) => (
-  <div className={cn('min-h-0 flex-1', className)}>{children}</div>
-)
+const Content = ({ children, className }: { children: ReactNode; className?: string }) => {
+  const scrollable = usePageScrollable()
+  // Canvas/fill views pass flex-1 to stretch into available space — they manage
+  // their own internal scroll and don't need page-level vertical padding or bottom spacer.
+  const isFilledContent = className?.includes('flex-1')
+  return (
+    <div
+      className={cn(
+        'min-h-0',
+        !scrollable && 'flex-1',
+        scrollable && 'px-[var(--cn-page-container-spacing-px)]',
+        scrollable && !isFilledContent && 'pt-[var(--cn-page-container-spacing-py)]',
+        className
+      )}
+    >
+      {children}
+      {/* Bottom spacer inside content flow. Padding/margin on direct flex children of
+          overflow-auto containers don't extend scroll height, but block-flow children do. */}
+      {scrollable && !isFilledContent && <div className="h-cn-md" />}
+    </div>
+  )
+}
 
 export const Page = {
   Root,

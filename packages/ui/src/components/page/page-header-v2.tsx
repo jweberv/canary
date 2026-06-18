@@ -112,7 +112,10 @@ export const HeaderV2: FC<PageHeaderV2Props> = ({
       className={cn(
         'w-full',
         hasTabs ? 'mb-0' : 'mb-cn-md',
-        scrollable && 'sticky top-0 z-10 bg-cn-1 pt-[var(--cn-page-container-spacing-py)]',
+        // In scrollable mode, Page.Root uses `display: contents` on the wrapper,
+        // so this header must own its own padding and sticky positioning.
+        scrollable &&
+          'sticky top-0 z-10 bg-cn-1 pt-[var(--cn-page-container-spacing-py)] px-[var(--cn-page-container-spacing-px)]',
         className
       )}
     >
