@@ -1,0 +1,64 @@
+pipeline:
+  name: pipeline_jweberv_canary_build_a7ac
+  stages:
+    - name: Build and Test
+      id: build_and_test
+      runtime: cloud
+      clone:
+        enabled: true
+      cache:
+        enabled: true
+      steps:
+        - name: Install Dependencies
+          id: install
+          run:
+            shell: bash
+            script: |-
+              corepack enable
+              corepack prepare pnpm@9.5.0 --activate
+              pnpm install --frozen-lockfile
+        - name: Build
+          id: build
+          run:
+            shell: bash
+            script: |-
+              corepack enable
+              corepack prepare pnpm@9.5.0 --activate
+              pnpm build
+        - name: Test
+          id: test
+          run:
+            shell: bash
+            script: |-
+              mkdir -p .harness/reports .harness/coverage
+              corepack enable
+              corepack prepare pnpm@9.5.0 --activate
+
+              # Install jest-junit for packages/forms
+              pnpm add -D jest-junit --filter @harnessio/forms --no-save || true
+
+              # Run tests across workspace with JUnit reporting
+              # Vitest packages use --reporter flag, Jest uses jest-junit
+              set +e
+
+              # Run Vitest tests in apps and packages/ui with JUnit output
+              pnpm -r --filter './apps/*' --filter '@harnessio/ui' test -- --reporter=default --reporter=junit --outputFile=../../.harness/reports/junit.xml 2>&1
+              vitest_status=$?
+
+              # Run Jest tests in packages/forms
+              cd packages/forms
+              JEST_JUNIT_OUTPUT_DIR=../../.harness/reports JEST_JUNIT_OUTPUT_NAME=junit-forms.xml npx jest --ci --reporters=default --reporters=jest-junit 2>&1
+              jest_status=$?
+              cd ../..
+
+              set -e
+              if [ "$vitest_status" -ne 0 ] || [ "$jest_status" -ne 0 ]; then
+                exit 1
+              fi
+            report:
+              type: junit
+              paths:
+                - .harness/reports/*.xml
+  identifier: pipeline_jweberv_canary_build_a7ac
+  tags:
+    onboarding: "true"
