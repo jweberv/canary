@@ -29,6 +29,10 @@ export interface CardEntry {
   subStepId: string
   status: CardStatus
   stateSnapshot: Record<string, unknown>
+  /** Display text for the user's selection, shown as a chat message in SinglePaneStepperV2. */
+  answer?: string
+  /** Epoch ms when the card was completed. Used for chat-message timestamps. */
+  completedAt?: number
 }
 
 export interface DrawerResult {

@@ -130,6 +130,16 @@ export default defineConfig({
           ],
         },
         {
+          label: "Growth Patterns",
+          items: [
+            {
+              slug: "growth-patterns/single-pane-stepper-v2",
+              label: "Single Pane Stepper v2",
+              attrs: { "data-icon": "list-select" },
+            },
+          ],
+        },
+        {
           label: "Components",
           items: [
             "components/data-display/accordion",

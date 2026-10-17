@@ -164,11 +164,20 @@ export function FlowEngineProvider({ flow, onComplete, children }: FlowEnginePro
       const resolvedNext = nextSubStepId || flow.subSteps[subStepId]?.next
       const currentState = stateRef.current
       const newState = statePatch ? { ...currentState, ...statePatch } : currentState
+      const answer = typeof statePatch?.answer === 'string' ? statePatch.answer : undefined
       if (statePatch) setState(newState)
 
       setCardHistory(prev => {
         const updated = prev.map(entry =>
-          entry.subStepId === subStepId ? { ...entry, status: 'completed' as const, stateSnapshot: newState } : entry
+          entry.subStepId === subStepId
+            ? {
+                ...entry,
+                status: 'completed' as const,
+                stateSnapshot: newState,
+                ...(answer ? { answer } : {}),
+                completedAt: Date.now()
+              }
+            : entry
         )
         if (resolvedNext && !updated.find(e => e.subStepId === resolvedNext)) {
           updated.push({ subStepId: resolvedNext, status: 'active', stateSnapshot: newState })
