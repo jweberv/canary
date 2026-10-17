@@ -34,10 +34,11 @@ import selectStyles from './select'
 import shimmerStyles from './shimmer'
 import shortcutStyle from './shortcut'
 import sidebarStyles from './sidebar'
+import singlePaneStepperV2Styles from './single-pane-stepper-v2'
 import skeletonStyles from './skeleton'
 import sliderStyles from './slider'
-import stackedListStyles from './stacked-list'
 import splitPaneStepperStyles from './split-pane-stepper'
+import stackedListStyles from './stacked-list'
 import stepperStyles from './stepper'
 import stickyListSectionStyles from './sticky-list-section'
 import studioCardStyles from './studio-card'
@@ -99,6 +100,7 @@ export const ComponentStyles = [
   shimmerStyles,
   sliderStyles,
   splitPaneStepperStyles,
+  singlePaneStepperV2Styles,
   stepperStyles,
 
   // Form styles
