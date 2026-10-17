@@ -3,6 +3,7 @@ title: Single Pane Stepper v2
 description: A single-column guided flow that keeps the stepper timeline and shows completed answers as chat messages instead of accordion cards.
 ---
 
+import { DocsPage } from "@/components/docs-page";
 import { Aside } from "@astrojs/starlight/components";
 import { FlagOnboardingDemo } from "@/components/single-pane-stepper-v2-demo";
 
@@ -126,33 +127,144 @@ Completed messages include:
 
 ## `Root`
 
-| Prop               | Required | Default                                     | Type                          |
-| ------------------ | -------- | ------------------------------------------- | ----------------------------- |
-| flow               | true     |                                             | FlowConfig                    |
-| icon               | false    |                                             | ReactNode                     |
-| title              | false    |                                             | string                        |
-| stepperTitle       | false    |                                             | string                        |
-| showStepperHeader  | false    | false                                       | boolean                       |
-| contentTitle       | false    |                                             | string                        |
-| contentSubtitle    | false    |                                             | string                        |
-| drawers            | false    |                                             | Record<string, ComponentType> |
-| onComplete         | false    |                                             | (state) => void               |
-| onClose            | false    |                                             | () => void                    |
-| showRootHeader     | false    | true                                        | boolean                       |
-| hideHeader         | false    | false                                       | boolean                       |
-| reactivationPrompt | false    | `{ title: "Go back?", description: "..." }` | `{ title, description }`      |
-| showStepBadge      | false    | true                                        | boolean                       |
-| className          | false    |                                             | string                        |
+<DocsPage.PropsTable
+  props={[
+    {
+      name: "flow",
+      required: true,
+      value: "FlowConfig",
+      description:
+        "Flow configuration defining steps, substeps, and the initial substep",
+    },
+    {
+      name: "icon",
+      required: false,
+      value: "ReactNode",
+      description: "Optional header icon",
+    },
+    {
+      name: "title",
+      required: false,
+      value: "string",
+      description: "Root header title",
+    },
+    {
+      name: "stepperTitle",
+      required: false,
+      value: "string",
+      description:
+        "Optional title above the timeline when showStepperHeader is true",
+    },
+    {
+      name: "showStepperHeader",
+      required: false,
+      value: "boolean",
+      description: "Show stepperTitle above the timeline. Default false.",
+    },
+    {
+      name: "contentTitle",
+      required: false,
+      value: "string",
+      description: "Heading above the conversation",
+    },
+    {
+      name: "contentSubtitle",
+      required: false,
+      value: "string",
+      description: "Supporting text under contentTitle",
+    },
+    {
+      name: "drawers",
+      required: false,
+      value: "Record<string, ComponentType<DrawerComponentProps>>",
+      description: "Drawer adapters keyed by id",
+    },
+    {
+      name: "onComplete",
+      required: false,
+      value: "(state: Record<string, unknown>) => void",
+      description: "Called when the last card completes",
+    },
+    {
+      name: "onClose",
+      required: false,
+      value: "() => void",
+      description: "Renders a close button in the root header",
+    },
+    {
+      name: "showRootHeader",
+      required: false,
+      value: "boolean",
+      description:
+        "Show the root header when icon, title, or onClose is provided. Default true.",
+    },
+    {
+      name: "hideHeader",
+      required: false,
+      value: "boolean",
+      description: "Deprecated alias for showRootHeader false",
+    },
+    {
+      name: "reactivationPrompt",
+      required: false,
+      value: "ReactivationPrompt",
+      description: "Title and description for the go-back confirmation dialog",
+    },
+    {
+      name: "showStepBadge",
+      required: false,
+      value: "boolean",
+      description:
+        "Show a Step n/total label next to each question. Default true.",
+    },
+    {
+      name: "className",
+      required: false,
+      value: "string",
+      description: "Class name for the root column",
+    },
+  ]}
+/>
 
 ## `Card`
 
-| Prop        | Required | Default | Type      |
-| ----------- | -------- | ------- | --------- |
-| title       | true     |         | string    |
-| description | false    |         | string    |
-| answer      | false    |         | string    |
-| children    | true     |         | ReactNode |
-| className   | false    |         | string    |
+<DocsPage.PropsTable
+  props={[
+    {
+      name: "title",
+      required: true,
+      value: "string",
+      description:
+        "Question shown as the step header. Stays visible after completion.",
+    },
+    {
+      name: "description",
+      required: false,
+      value: "string",
+      description: "Supporting text under the question",
+    },
+    {
+      name: "answer",
+      required: false,
+      value: "string",
+      description:
+        "Optional in-card answer text. Prefer complete({ answer }) so it persists.",
+    },
+    {
+      name: "children",
+      required: true,
+      value: "ReactNode",
+      description:
+        "Active-step form. Not rendered after the step is completed.",
+    },
+    {
+      name: "className",
+      required: false,
+      value: "string",
+      description: "Class name for the card column",
+    },
+  ]}
+/>
 
 ## Best practices
 
