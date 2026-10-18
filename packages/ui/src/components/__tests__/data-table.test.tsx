@@ -1,10 +1,12 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
-import { ColumnDef } from '@tanstack/react-table'
+import { Column, ColumnDef } from '@tanstack/react-table'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, test, vi } from 'vitest'
 
 import { DataTable } from '../data-table'
+import { computeSpacerHeight } from '../data-table/use-spacer-height'
+import { getCommonPinningStyles, getStickyCellStyles } from '../data-table/utils'
 
 // Test Wrapper with TooltipProvider
 const TestWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -737,7 +739,9 @@ describe('DataTable', () => {
     })
   })
 
-  describe('Column Resizing (Internal)', () => {
+  describe('Column Resizing', () => {
+    const parseWidth = (element: HTMLElement | null) => Number.parseFloat(element?.style.width || '0')
+
     test('should not show resize handles by default', () => {
       render(
         <TestWrapper>
@@ -745,11 +749,10 @@ describe('DataTable', () => {
         </TestWrapper>
       )
 
-      const resizeHandles = screen.queryAllByLabelText('Resize column')
-      expect(resizeHandles).toHaveLength(0)
+      expect(screen.queryAllByLabelText(/Resize .+ column/)).toHaveLength(0)
     })
 
-    test('should show resize handles when _enableColumnResizing is true', () => {
+    test('should show resize handles when enableColumnResizing is true', () => {
       const resizableColumns: ColumnDef<TestData>[] = [
         {
           accessorKey: 'name',
@@ -760,11 +763,11 @@ describe('DataTable', () => {
 
       render(
         <TestWrapper>
-          <DataTable data={mockData} columns={resizableColumns} _enableColumnResizing={true} />
+          <DataTable data={mockData} columns={resizableColumns} enableColumnResizing />
         </TestWrapper>
       )
 
-      const resizeHandles = screen.getAllByLabelText('Resize column')
+      const resizeHandles = screen.getAllByLabelText(/Resize .+ column/)
       expect(resizeHandles.length).toBeGreaterThan(0)
     })
 
@@ -779,12 +782,189 @@ describe('DataTable', () => {
 
       render(
         <TestWrapper>
-          <DataTable data={mockData} columns={resizableColumns} _enableColumnResizing={true} />
+          <DataTable data={mockData} columns={resizableColumns} enableColumnResizing />
         </TestWrapper>
       )
 
-      const resizeHandles = screen.queryAllByLabelText('Resize column')
-      expect(resizeHandles).toHaveLength(0)
+      expect(screen.queryAllByLabelText(/Resize .+ column/)).toHaveLength(0)
+    })
+
+    test('should keep a non-resizable column sizing state unchanged when a sibling is resized', () => {
+      const columns: ColumnDef<TestData>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          size: 120
+        },
+        {
+          accessorKey: 'age',
+          header: 'Age',
+          size: 140,
+          minSize: 100,
+          enableResizing: false
+        }
+      ]
+
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={columns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const nameHandle = screen.getByLabelText('Resize name column')
+      const ageHead = screen.getByText('Age').closest('th') as HTMLElement
+
+      fireEvent.mouseDown(nameHandle, { clientX: 100, clientY: 0, buttons: 1 })
+      fireEvent.mouseMove(document, { clientX: 140, clientY: 0, buttons: 1 })
+      fireEvent.mouseUp(document, { clientX: 140, clientY: 0 })
+
+      expect(screen.queryByLabelText('Resize age column')).not.toBeInTheDocument()
+      expect(parseWidth(ageHead)).toBe(140)
+      expect(ageHead.style.minWidth).toBe('100px')
+    })
+
+    test('should not show resize handles on injected select or expander columns', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} enableColumnResizing enableRowSelection enableExpanding />
+        </TestWrapper>
+      )
+
+      expect(screen.queryByLabelText('Resize select column')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Resize expander column')).not.toBeInTheDocument()
+      expect(screen.getByLabelText('Resize name column')).toBeInTheDocument()
+    })
+
+    test('should render each handle as a direct child of its header cell', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const handle = screen.getByLabelText('Resize name column')
+      const head = screen.getByText('Name').closest('th') as HTMLElement
+
+      expect(handle.parentElement).toBe(head)
+      expect(head).toHaveClass('cn-table-v2-head-resizable')
+      expect(handle).toHaveAttribute('data-column-resizer')
+      expect(handle).toHaveAttribute('data-column-id', 'name')
+      expect(handle).not.toHaveAttribute('data-resizing')
+    })
+
+    test('should change a leaf column width when the handle is dragged', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      const ageHead = screen.getByText('Age').closest('th') as HTMLElement
+      const startNameWidth = parseWidth(nameHead)
+      const startAgeWidth = parseWidth(ageHead)
+      const handle = screen.getByLabelText('Resize name column')
+
+      fireEvent.mouseDown(handle, { clientX: 100, clientY: 0, buttons: 1 })
+      expect(handle).toHaveAttribute('data-resizing', 'true')
+      const indicator = document.querySelector('[data-column-resize-indicator]') as HTMLElement
+      expect(indicator).toBeInTheDocument()
+      expect(indicator.style.transform).toMatch(/translate\(/)
+      expect(indicator.style.height).toBeTruthy()
+      fireEvent.mouseMove(document, { clientX: 140, clientY: 0, buttons: 1 })
+      fireEvent.mouseUp(document, { clientX: 140, clientY: 0 })
+
+      expect(parseWidth(nameHead)).toBe(startNameWidth + 40)
+      expect(parseWidth(ageHead)).toBe(startAgeWidth)
+      expect(parseWidth(screen.getByText('John Doe').closest('td'))).toBe(startNameWidth + 40)
+    })
+
+    test('should start resizing from a touch event', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      const startNameWidth = parseWidth(nameHead)
+      const handle = screen.getByLabelText('Resize name column')
+
+      fireEvent.touchStart(handle, { touches: [{ clientX: 100, clientY: 0 }] })
+      fireEvent.touchMove(document, { touches: [{ clientX: 125, clientY: 0 }] })
+      fireEvent.touchEnd(document)
+
+      expect(parseWidth(nameHead)).toBe(startNameWidth + 25)
+    })
+
+    test('should not sort when a resize handle is used on a sortable column', async () => {
+      const handleSortingChange = vi.fn()
+      const sortableColumns: ColumnDef<TestData>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          enableSorting: true
+        }
+      ]
+
+      render(
+        <TestWrapper>
+          <DataTable
+            data={mockData}
+            columns={sortableColumns}
+            enableColumnResizing
+            onSortingChange={handleSortingChange}
+          />
+        </TestWrapper>
+      )
+
+      const handle = screen.getByLabelText('Resize name column')
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      fireEvent.mouseDown(handle, { clientX: 100, clientY: 0, buttons: 1 })
+      fireEvent.mouseMove(document, { clientX: 130, clientY: 0, buttons: 1 })
+      fireEvent.mouseUp(nameHead, { clientX: 130, clientY: 0 })
+      fireEvent.click(nameHead)
+
+      expect(handleSortingChange).not.toHaveBeenCalled()
+
+      await userEvent.click(screen.getByText('Name'))
+      expect(handleSortingChange).toHaveBeenCalled()
+    })
+
+    test('should resize with arrow keys and clamp to minSize and maxSize', () => {
+      const constrainedColumns: ColumnDef<TestData>[] = [
+        {
+          accessorKey: 'name',
+          header: 'Name',
+          size: 120,
+          minSize: 100,
+          maxSize: 160
+        }
+      ]
+
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={constrainedColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      const handle = screen.getByLabelText('Resize name column')
+
+      fireEvent.keyDown(handle, { key: 'ArrowRight' })
+      expect(parseWidth(nameHead)).toBe(130)
+
+      fireEvent.keyDown(handle, { key: 'ArrowRight', shiftKey: true })
+      expect(parseWidth(nameHead)).toBe(160)
+
+      fireEvent.keyDown(handle, { key: 'ArrowLeft', shiftKey: true })
+      expect(parseWidth(nameHead)).toBe(110)
+
+      fireEvent.keyDown(handle, { key: 'ArrowLeft' })
+      expect(parseWidth(nameHead)).toBe(100)
+
+      fireEvent.keyDown(handle, { key: 'ArrowLeft' })
+      expect(parseWidth(nameHead)).toBe(100)
     })
   })
 
@@ -1052,12 +1232,11 @@ describe('DataTable', () => {
 
       render(
         <TestWrapper>
-          <DataTable data={mockData} columns={resizableColumns} _enableColumnResizing={true} />
+          <DataTable data={mockData} columns={resizableColumns} enableColumnResizing />
         </TestWrapper>
       )
 
-      const resizeHandles = screen.getAllByLabelText('Resize column')
-      expect(resizeHandles.length).toBeGreaterThan(0)
+      expect(screen.getByLabelText('Resize name column')).toBeInTheDocument()
     })
   })
 
@@ -1308,6 +1487,69 @@ describe('DataTable', () => {
       await userEvent.click(screen.getByText('Name'))
       expect(handleSortingChange).toHaveBeenCalled()
     })
+
+    test('should expose resize handles only on leaf headers', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={groupedColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      expect(screen.getByLabelText('Resize name column')).toBeInTheDocument()
+      expect(screen.getByLabelText('Resize age column')).toBeInTheDocument()
+      expect(screen.getByLabelText('Resize email column')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Resize contact column')).not.toBeInTheDocument()
+
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      expect(nameHead).toHaveAttribute('rowspan', '2')
+      expect(screen.getByLabelText('Resize name column').parentElement).toBe(nameHead)
+
+      const leafRow = document.querySelector('thead tr[data-header-depth="1"]')
+      expect(leafRow?.querySelector('[data-column-id="name"]')).not.toBeInTheDocument()
+    })
+
+    test('should resize a grouped leaf without changing group colSpan or sibling widths', () => {
+      const parseWidth = (element: HTMLElement | null) => Number.parseFloat(element?.style.width || '0')
+
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={groupedColumns} enableColumnResizing />
+        </TestWrapper>
+      )
+
+      const contactHead = screen.getByText('Contact').closest('th') as HTMLElement
+      const ageHead = screen.getByText('Age').closest('th') as HTMLElement
+      const emailHead = screen.getByText('Email').closest('th') as HTMLElement
+      const startAgeWidth = parseWidth(ageHead)
+      const startEmailWidth = parseWidth(emailHead)
+      const startContactWidth = parseWidth(contactHead)
+
+      fireEvent.keyDown(screen.getByLabelText('Resize age column'), { key: 'ArrowRight', shiftKey: true })
+
+      expect(parseWidth(ageHead)).toBe(startAgeWidth + 50)
+      expect(parseWidth(emailHead)).toBe(startEmailWidth)
+      expect(parseWidth(contactHead)).toBe(startContactWidth + 50)
+      expect(contactHead).toHaveAttribute('colspan', '2')
+      expect(screen.getByText('Name').closest('th')).toHaveAttribute('rowspan', '2')
+    })
+
+    test('should not sort grouped headers when a child leaf is resized', () => {
+      const handleSortingChange = vi.fn()
+
+      render(
+        <TestWrapper>
+          <DataTable
+            data={mockData}
+            columns={groupedColumns}
+            enableColumnResizing
+            onSortingChange={handleSortingChange}
+          />
+        </TestWrapper>
+      )
+
+      fireEvent.keyDown(screen.getByLabelText('Resize age column'), { key: 'ArrowRight' })
+      expect(handleSortingChange).not.toHaveBeenCalled()
+    })
   })
 
   describe('Table Structure', () => {
@@ -1432,14 +1674,14 @@ describe('DataTable', () => {
       expect(screen.queryAllByLabelText('Toggle Row Expanded')).toHaveLength(0)
     })
 
-    test('should use default _enableColumnResizing', () => {
+    test('should use default enableColumnResizing', () => {
       render(
         <TestWrapper>
           <DataTable data={mockData} columns={mockColumns} />
         </TestWrapper>
       )
 
-      expect(screen.queryAllByLabelText('Resize column')).toHaveLength(0)
+      expect(screen.queryAllByLabelText(/Resize .+ column/)).toHaveLength(0)
     })
   })
 
@@ -1729,5 +1971,460 @@ describe('DataTable', () => {
       expect(screen.getByText('Parent A')).toBeInTheDocument()
       expect(screen.queryByText('Child A1')).not.toBeInTheDocument()
     })
+  })
+
+  describe('Sticky Header', () => {
+    const stickyGroupedColumns: ColumnDef<TestData>[] = [
+      {
+        id: 'name',
+        accessorKey: 'name',
+        header: 'Name',
+        enableSorting: true
+      },
+      {
+        id: 'contact',
+        header: 'Contact',
+        enableSorting: false,
+        columns: [
+          {
+            id: 'age',
+            accessorKey: 'age',
+            header: 'Age',
+            enableSorting: true
+          },
+          {
+            id: 'email',
+            accessorKey: 'email',
+            header: 'Email',
+            enableSorting: false
+          }
+        ]
+      }
+    ]
+
+    test('should render the single scroll viewport and sticky container class when stickyHeader is set', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} stickyHeader maxHeight={300} />
+        </TestWrapper>
+      )
+
+      expect(container.querySelector('.cn-table-v2-container')).toHaveClass('cn-table-v2-sticky')
+
+      const viewport = container.querySelector('.cn-table-v2-viewport')
+      expect(viewport).toBeInTheDocument()
+      expect(viewport).toHaveStyle({ maxHeight: '300px' })
+
+      // The legacy inner scroll wrapper is not rendered in sticky mode
+      expect(container.querySelector('.overflow-x-auto')).not.toBeInTheDocument()
+    })
+
+    test('should mark header cells as sticky with top offset and header z-index', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} stickyHeader maxHeight={300} />
+        </TestWrapper>
+      )
+
+      const heads = container.querySelectorAll('thead th')
+      expect(heads.length).toBeGreaterThan(0)
+      heads.forEach(head => {
+        expect(head).toHaveAttribute('data-sticky', 'top')
+        expect(head).toHaveStyle({ position: 'sticky', top: '0px', zIndex: 4 })
+      })
+    })
+
+    test('should offset the second header row below the first in grouped-header tables', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={stickyGroupedColumns} stickyHeader maxHeight={300} />
+        </TestWrapper>
+      )
+
+      const depth0Heads = container.querySelectorAll('thead tr[data-header-depth="0"] th')
+      expect(depth0Heads.length).toBeGreaterThan(0)
+      depth0Heads.forEach(head => {
+        expect(head).toHaveStyle({ position: 'sticky', top: '0px' })
+      })
+
+      const depth1Heads = container.querySelectorAll('thead tr[data-header-depth="1"] th')
+      expect(depth1Heads.length).toBeGreaterThan(0)
+      depth1Heads.forEach(head => {
+        // jsdom reports zero layout height, so the CSS variable fallback is used
+        expect(head).toHaveStyle({ position: 'sticky', top: 'var(--cn-table-header-row-h)' })
+      })
+    })
+
+    test('should update the second header row offset when the first row height changes', () => {
+      const originalResizeObserver = globalThis.ResizeObserver
+      let notify: (() => void) | undefined
+
+      class MockResizeObserver {
+        private readonly callback: ResizeObserverCallback
+
+        constructor(callback: ResizeObserverCallback) {
+          this.callback = callback
+          notify = () => this.callback([], this as unknown as ResizeObserver)
+        }
+
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+
+      vi.stubGlobal('ResizeObserver', MockResizeObserver)
+
+      try {
+        const { container } = render(
+          <TestWrapper>
+            <DataTable data={mockData} columns={stickyGroupedColumns} stickyHeader maxHeight={300} />
+          </TestWrapper>
+        )
+
+        const firstRow = container.querySelector('thead tr[data-header-depth="0"]') as HTMLTableRowElement
+        vi.spyOn(firstRow, 'getBoundingClientRect').mockReturnValue({
+          height: 48,
+          width: 0,
+          top: 0,
+          left: 0,
+          bottom: 48,
+          right: 0,
+          x: 0,
+          y: 0,
+          toJSON: () => ({})
+        })
+
+        notify?.()
+
+        const depth1Heads = container.querySelectorAll('thead tr[data-header-depth="1"] th')
+        depth1Heads.forEach(head => {
+          expect(head).toHaveStyle({ position: 'sticky', top: '48px' })
+        })
+      } finally {
+        vi.stubGlobal('ResizeObserver', originalResizeObserver)
+      }
+    })
+
+    test('should keep a pinned row-spanned leaf sticky after it is resized', () => {
+      render(
+        <TestWrapper>
+          <DataTable
+            data={mockData}
+            columns={stickyGroupedColumns}
+            stickyHeader
+            maxHeight={300}
+            enableColumnResizing
+            columnPinning={{ left: ['name'], right: [] }}
+          />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th') as HTMLElement
+      expect(nameHead).toHaveStyle({ position: 'sticky', left: '0px' })
+
+      fireEvent.keyDown(screen.getByLabelText('Resize name column'), { key: 'ArrowRight' })
+
+      expect(nameHead).toHaveStyle({ position: 'sticky', left: '0px' })
+      expect(Number.parseFloat(nameHead.style.width)).toBeGreaterThan(0)
+    })
+
+    test('should layer sticky headers above pinned columns', () => {
+      render(
+        <TestWrapper>
+          <DataTable
+            data={mockData}
+            columns={mockColumns}
+            stickyHeader
+            maxHeight={300}
+            columnPinning={{ left: ['name'], right: [] }}
+          />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th')
+      expect(nameHead).toHaveStyle({ position: 'sticky', top: '0px', left: '0px', zIndex: 5 })
+
+      const ageHead = screen.getByText('Age').closest('th')
+      expect(ageHead).toHaveStyle({ position: 'sticky', top: '0px', zIndex: 4 })
+    })
+  })
+
+  describe('Default rendering without stickyHeader (regression)', () => {
+    test('should render the legacy structure without sticky classes or attributes', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} />
+        </TestWrapper>
+      )
+
+      expect(container.querySelector('.cn-table-v2-container')).not.toHaveClass('cn-table-v2-sticky')
+      expect(container.querySelector('.cn-table-v2-viewport')).not.toBeInTheDocument()
+      expect(container.querySelector('.overflow-x-auto')).toBeInTheDocument()
+
+      const heads = container.querySelectorAll('thead th')
+      heads.forEach(head => {
+        expect(head).not.toHaveAttribute('data-sticky')
+        expect(head).toHaveStyle({ position: 'relative', zIndex: 0 })
+      })
+    })
+
+    test('should keep existing column pinning output unchanged', () => {
+      render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} columnPinning={{ left: ['name'], right: [] }} />
+        </TestWrapper>
+      )
+
+      const nameHead = screen.getByText('Name').closest('th')
+      expect(nameHead).toHaveStyle({ position: 'sticky', left: '0px', zIndex: 1 })
+      expect(nameHead).not.toHaveAttribute('data-sticky')
+    })
+
+    test('should not render tfoot or spacer row when rowPinning is not set', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable data={mockData} columns={mockColumns} stickyHeader maxHeight={300} />
+        </TestWrapper>
+      )
+
+      expect(container.querySelector('tfoot')).not.toBeInTheDocument()
+      expect(container.querySelector('.cn-table-v2-spacer-row')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Row Pinning (bottom)', () => {
+    const dataWithTotals: TestData[] = [...mockData, { id: 'grand-total', name: 'Grand total', age: 90, email: '' }]
+
+    const renderPinnedTable = (extraProps: Record<string, unknown> = {}) =>
+      render(
+        <TestWrapper>
+          <DataTable
+            data={dataWithTotals}
+            columns={mockColumns}
+            getRowId={row => row.id}
+            rowPinning={{ bottom: ['grand-total'] }}
+            stickyHeader
+            maxHeight={300}
+            {...extraProps}
+          />
+        </TestWrapper>
+      )
+
+    test('should render the bottom-pinned row once, in a tfoot', () => {
+      const { container } = renderPinnedTable()
+
+      const tfoot = container.querySelector('tfoot')
+      expect(tfoot).toBeInTheDocument()
+      expect(tfoot).toHaveClass('cn-table-v2-footer')
+
+      expect(screen.getAllByText('Grand total')).toHaveLength(1)
+
+      const pinnedRow = screen.getByText('Grand total').closest('tr')
+      expect(pinnedRow).toHaveClass('cn-table-v2-row-pinned')
+      expect(pinnedRow).toHaveAttribute('data-pinned', 'bottom')
+      expect(tfoot).toContainElement(pinnedRow as HTMLElement)
+    })
+
+    test('should exclude the pinned row from the body rows', () => {
+      const { container } = renderPinnedTable()
+
+      const bodyRows = Array.from(container.querySelectorAll('tbody > tr:not(.cn-table-v2-spacer-row)'))
+      expect(bodyRows).toHaveLength(mockData.length)
+      expect(bodyRows.some(row => row.textContent?.includes('Grand total'))).toBe(false)
+    })
+
+    test('should stick footer cells to the bottom with the pinned-row z-index', () => {
+      renderPinnedTable()
+
+      const footerCell = screen.getByText('Grand total').closest('td')
+      expect(footerCell).toHaveStyle({ position: 'sticky', bottom: '0px', zIndex: 2 })
+    })
+
+    test('should render only the last id when more than one bottom row is pinned', () => {
+      const { container } = renderPinnedTable({
+        data: [...dataWithTotals, { id: 'grand-total-2', name: 'Grand total 2', age: 120, email: '' }],
+        rowPinning: { bottom: ['grand-total', 'grand-total-2'] }
+      })
+
+      // The bottom-most (last) id is the single rendered pinned row…
+      const footerRows = container.querySelectorAll('tfoot > tr')
+      expect(footerRows).toHaveLength(1)
+      expect(footerRows[0].textContent).toContain('Grand total 2')
+
+      // …and the clamped row does not fall back into the body either.
+      expect(screen.queryByText('Grand total')).not.toBeInTheDocument()
+    })
+
+    test('should render the corner cell above both axes when a column is also pinned', () => {
+      renderPinnedTable({ columnPinning: { right: ['email'], left: [] } })
+
+      const row = screen.getByText('Grand total').closest('tr')!
+      const cells = row.querySelectorAll('td')
+      const lastCell = cells[cells.length - 1]
+
+      expect(lastCell).toHaveStyle({ position: 'sticky', bottom: '0px', right: '0px', zIndex: 3 })
+    })
+
+    test('should render the spacer row inside the tbody', () => {
+      const { container } = renderPinnedTable()
+
+      const spacer = container.querySelector('.cn-table-v2-spacer-row')
+      expect(spacer).toBeInTheDocument()
+      expect(container.querySelector('tbody')).toContainElement(spacer as HTMLElement)
+
+      const spacerCell = spacer?.querySelector('td')
+      expect(spacerCell).toHaveAttribute('colspan', String(mockColumns.length))
+    })
+
+    test('should still render body content when nothing is pinned', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable
+            data={mockData}
+            columns={mockColumns}
+            getRowId={row => row.id}
+            rowPinning={{ bottom: [] }}
+            stickyHeader
+            maxHeight={300}
+          />
+        </TestWrapper>
+      )
+
+      expect(screen.getByText('John Doe')).toBeInTheDocument()
+      expect(container.querySelector('tfoot')).not.toBeInTheDocument()
+      expect(container.querySelector('.cn-table-v2-spacer-row')).not.toBeInTheDocument()
+    })
+
+    test('should keep the pinned row in the tfoot when only its data row is present (keepPinnedRows)', () => {
+      // Simulates a server-paginated page whose data excludes the totals row's
+      // original position: keepPinnedRows still surfaces it in the tfoot.
+      const { container } = render(
+        <TestWrapper>
+          <DataTable
+            data={dataWithTotals}
+            columns={mockColumns}
+            getRowId={row => row.id}
+            rowPinning={{ bottom: ['grand-total'] }}
+            stickyHeader
+            maxHeight={300}
+          />
+        </TestWrapper>
+      )
+
+      const bodyRows = Array.from(container.querySelectorAll('tbody > tr:not(.cn-table-v2-spacer-row)'))
+      expect(bodyRows).toHaveLength(mockData.length)
+      expect(container.querySelector('tfoot')).toContainElement(screen.getByText('Grand total').closest('tr'))
+    })
+
+    test('should work with pagination props — pinned row stays in the tfoot and spacer renders', () => {
+      const { container } = render(
+        <TestWrapper>
+          <DataTable
+            data={dataWithTotals}
+            columns={mockColumns}
+            getRowId={row => row.id}
+            rowPinning={{ bottom: ['grand-total'] }}
+            stickyHeader
+            maxHeight={300}
+            paginationProps={{ totalItems: 100, pageSize: 4, currentPage: 1, goToPage: vi.fn() }}
+          />
+        </TestWrapper>
+      )
+
+      // Grand total appears exactly once, in the tfoot — not in the paginated body
+      expect(screen.getAllByText('Grand total')).toHaveLength(1)
+      expect(container.querySelector('tfoot')).toContainElement(screen.getByText('Grand total').closest('tr'))
+
+      // Body excludes the totals row; spacer still renders between body and tfoot
+      const bodyRows = Array.from(container.querySelectorAll('tbody > tr:not(.cn-table-v2-spacer-row)'))
+      expect(bodyRows).toHaveLength(mockData.length)
+      expect(container.querySelector('.cn-table-v2-spacer-row')).toBeInTheDocument()
+    })
+
+    test('should layer both corners on a short table with left and right pinned columns', () => {
+      const { container } = renderPinnedTable({
+        data: [...mockData.slice(0, 2), { id: 'grand-total', name: 'Grand total', age: 90, email: '' }],
+        columnPinning: { left: ['name'], right: ['email'] }
+      })
+
+      const row = screen.getByText('Grand total').closest('tr')!
+      const cells = row.querySelectorAll('td')
+
+      expect(cells[0]).toHaveStyle({ position: 'sticky', bottom: '0px', left: '0px', zIndex: 3 })
+      expect(cells[cells.length - 1]).toHaveStyle({ position: 'sticky', bottom: '0px', right: '0px', zIndex: 3 })
+
+      // Short table still gets a spacer row between the 2 body rows and the tfoot
+      expect(container.querySelector('.cn-table-v2-spacer-row')).toBeInTheDocument()
+    })
+  })
+})
+
+describe('computeSpacerHeight', () => {
+  test('should return the surplus viewport height', () => {
+    expect(computeSpacerHeight({ viewportClientHeight: 300, contentHeight: 120 })).toBe(180)
+  })
+
+  test('should return 0 when content fills or exceeds the viewport', () => {
+    expect(computeSpacerHeight({ viewportClientHeight: 300, contentHeight: 300 })).toBe(0)
+    expect(computeSpacerHeight({ viewportClientHeight: 300, contentHeight: 450 })).toBe(0)
+  })
+})
+
+describe('getStickyCellStyles', () => {
+  const createColumn = (pinned: false | 'left' | 'right' = false) =>
+    ({
+      getIsPinned: () => pinned,
+      getIsLastColumn: () => false,
+      getIsFirstColumn: () => false,
+      getStart: () => 0,
+      getAfter: () => 0
+    }) as unknown as Column<TestData>
+
+  test('should keep getCommonPinningStyles backward compatible', () => {
+    const column = createColumn()
+    expect(getCommonPinningStyles(column)).toEqual(getStickyCellStyles({ column }))
+  })
+
+  test('should return relative positioning for unpinned, non-sticky cells', () => {
+    const styles = getStickyCellStyles({ column: createColumn() })
+    expect(styles).toMatchObject({ position: 'relative', zIndex: 0 })
+    expect(styles.top).toBeUndefined()
+    expect(styles.left).toBeUndefined()
+    expect(styles.right).toBeUndefined()
+  })
+
+  test('should pin columns with sticky positioning on the horizontal axis', () => {
+    const styles = getStickyCellStyles({ column: createColumn('left') })
+    expect(styles).toMatchObject({ position: 'sticky', left: '0px', zIndex: 1 })
+    expect(styles.top).toBeUndefined()
+  })
+
+  test('should stick header cells to the top with the header z-index layer', () => {
+    const styles = getStickyCellStyles({ column: createColumn(), vertical: { edge: 'top', offset: 0 } })
+    expect(styles).toMatchObject({ position: 'sticky', top: '0px', zIndex: 4 })
+  })
+
+  test('should accept string offsets such as CSS variables', () => {
+    const styles = getStickyCellStyles({
+      column: createColumn(),
+      vertical: { edge: 'top', offset: 'var(--cn-table-header-row-h)' }
+    })
+    expect(styles.top).toBe('var(--cn-table-header-row-h)')
+  })
+
+  test('should combine header and pinned-column layers for corner cells', () => {
+    const styles = getStickyCellStyles({ column: createColumn('left'), vertical: { edge: 'top', offset: 0 } })
+    expect(styles).toMatchObject({ position: 'sticky', top: '0px', left: '0px', zIndex: 5 })
+  })
+
+  test('should stick bottom-pinned row cells with the pinned-row z-index layer', () => {
+    const styles = getStickyCellStyles({ column: createColumn(), vertical: { edge: 'bottom', offset: 0 } })
+    expect(styles).toMatchObject({ position: 'sticky', bottom: '0px', zIndex: 2 })
+    expect(styles.top).toBeUndefined()
+  })
+
+  test('should combine bottom-pinned row and pinned-column layers for the grand-total corner', () => {
+    const styles = getStickyCellStyles({ column: createColumn('right'), vertical: { edge: 'bottom', offset: 0 } })
+    expect(styles).toMatchObject({ position: 'sticky', bottom: '0px', right: '0px', zIndex: 3 })
   })
 })

@@ -7,10 +7,14 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { ProfileSettingsViewWrapper } from '@/pages/view-preview/profile-settings-view-wrapper.tsx'
 import { RepoSettingsViewWrapper } from '@/pages/view-preview/repo-settings-view-wrapper'
 import { SideNavWrapper } from '@/pages/view-preview/side-nav-wrapper'
+import DataTableColumnResizingDemo from '@subjects/views/data-table-column-resizing-demo'
 import DataTableDemo from '@subjects/views/data-table-demo'
 import DataTableGroupedHeadersDemo from '@subjects/views/data-table-grouped-headers-demo'
+import DataTablePinnedRowsDemo from '@subjects/views/data-table-pinned-rows-demo'
+import DataTableStickyHeaderDemo from '@subjects/views/data-table-sticky-header-demo'
 import DraggableCardsDemo from '@subjects/views/draggable-cards-demo'
 import ExecutionListWrapper from '@subjects/views/execution-list/execution-list'
+import GaugeDemo from '@subjects/views/gauge-demo'
 import { LabelsForm } from '@subjects/views/labels/labels-form'
 import { ProjectLabelsList } from '@subjects/views/labels/project-labels-list'
 import { RepoLabelsList } from '@subjects/views/labels/repo-labels-list'
@@ -543,6 +547,18 @@ export const viewPreviews: Record<string, ViewPreviewGroup> = {
       'data-table-grouped-headers-demo': {
         label: 'Data Table Grouped Headers',
         element: <DataTableGroupedHeadersDemo />
+      },
+      'data-table-column-resizing-demo': {
+        label: 'Data Table Column Resizing',
+        element: <DataTableColumnResizingDemo />
+      },
+      'data-table-sticky-header-demo': {
+        label: 'Data Table Sticky Header',
+        element: <DataTableStickyHeaderDemo />
+      },
+      'data-table-pinned-rows-demo': {
+        label: 'Data Table Pinned Rows',
+        element: <DataTablePinnedRowsDemo />
       }
     }
   },
@@ -593,6 +609,14 @@ export const viewPreviews: Record<string, ViewPreviewGroup> = {
         element: (
           <RootViewWrapper>
             <WaterfallProgressDemo />
+          </RootViewWrapper>
+        )
+      },
+      'gauge-demo': {
+        label: 'Gauge',
+        element: (
+          <RootViewWrapper>
+            <GaugeDemo />
           </RootViewWrapper>
         )
       }

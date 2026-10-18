@@ -11,6 +11,12 @@ export interface ThreadRuntimeCoreConfig {
   initialMessages?: Message[]
   onMessagesChange?: (messages: Message[]) => void
   capabilityExecutionManager?: CapabilityExecutionManager
+  /**
+   * When true (default), sending a new message marks still-open elicitation
+   * cards superseded in the live UI so they stop spinning. Resume is invalidated
+   * by ml-infra on the plain-text turn. Exposed as a gate for rollout.
+   */
+  supersedeOpenElicitationsOnSend?: boolean
 }
 
 export class ThreadRuntimeCore extends BaseSubscribable {
@@ -22,12 +28,21 @@ export class ThreadRuntimeCore extends BaseSubscribable {
   private _abortController: AbortController | null = null
   private _conversationId?: string
   private _title?: string
+  private _cancelPromise: Promise<void> | null = null
 
   // Resolvers waiting for _isRunning to flip to false. Drained in the
   // finally block of every run path so callers can serialize their
   // dispatch against an in-progress run instead of having their error
   // swallowed by the caller's try/catch.
   private _idleWaiters: Array<() => void> = []
+
+  // Generic background tasks that hold the thread in a "running" state
+  // without an active stream run. Any UI-driven async work (e.g. a card
+  // that polls a status API) can register one to keep the composer
+  // showing a running/stop affordance, and is cancelled alongside the
+  // run when the user presses stop. Keyed by an opaque task id; the
+  // optional onCancel is invoked when the task is cancelled via cancelRun.
+  private _backgroundTasks = new Map<string, { onCancel?: () => void }>()
 
   // Track current part being accumulated
   private _currentPart: {
@@ -49,7 +64,7 @@ export class ThreadRuntimeCore extends BaseSubscribable {
   }
 
   public get isRunning(): boolean {
-    return this._isRunning
+    return this._isRunning || this._backgroundTasks.size > 0
   }
 
   public get isDisabled(): boolean {
@@ -62,6 +77,10 @@ export class ThreadRuntimeCore extends BaseSubscribable {
 
   public get pendingCapability(): { capabilityId: string; capabilityName: string } | null {
     return this._pendingCapability
+  }
+
+  public get supersedeOpenElicitationsOnSend(): boolean {
+    return this.config.supersedeOpenElicitationsOnSend !== false
   }
 
   public get conversationId(): string | undefined {
@@ -130,6 +149,60 @@ export class ThreadRuntimeCore extends BaseSubscribable {
         // a single bad waiter can't block the rest.
       }
     }
+  }
+
+  /**
+   * Registers a generic background task that keeps the thread reported as
+   * running (isRunning === true) for as long as it is active, even when no
+   * stream run is in flight. Use this for UI-driven async work — e.g. a card
+   * that polls a status API — so the composer shows a running/stop
+   * affordance and the work is cancelled when the user presses stop.
+   *
+   * Returns an opaque id to pass to stopBackgroundTask. The optional onCancel
+   * callback is invoked if the task is cancelled via cancelRun (stop button).
+   */
+  public startBackgroundTask(options?: { onCancel?: () => void }): string {
+    const id = `bg-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    this._backgroundTasks.set(id, { onCancel: options?.onCancel })
+    this.notifySubscribers()
+    return id
+  }
+
+  /**
+   * Removes a previously registered background task. Once the last task is
+   * removed (and no run is in flight) any idle waiters are drained so queued
+   * dispatches can proceed.
+   */
+  public stopBackgroundTask(id: string): void {
+    if (this._backgroundTasks.delete(id)) {
+      if (!this.isRunning) {
+        this.drainIdleWaiters()
+      }
+      this.notifySubscribers()
+    }
+  }
+
+  private cancelBackgroundTasks(taskIds?: readonly string[]): void {
+    const entries = taskIds
+      ? taskIds.flatMap(id => {
+          const task = this._backgroundTasks.get(id)
+          return task ? ([[id, task]] as const) : []
+        })
+      : [...this._backgroundTasks.entries()]
+    if (entries.length === 0) return
+    for (const [id, task] of entries) {
+      this._backgroundTasks.delete(id)
+      try {
+        task.onCancel?.()
+      } catch {
+        // onCancel callbacks should not throw; swallow defensively so a
+        // single bad task can't block cancelling the rest.
+      }
+    }
+    if (!this.isRunning) {
+      this.drainIdleWaiters()
+    }
+    this.notifySubscribers()
   }
 
   public async startSystemEventRun(systemEvent: SystemEvent): Promise<void> {
@@ -508,11 +581,37 @@ export class ThreadRuntimeCore extends BaseSubscribable {
   }
 
   public cancelRun(): void {
-    if (!this._isRunning || !this._abortController) {
-      return
+    if (this._cancelPromise) return
+    this._cancelPromise = this.performCancel().finally(() => {
+      this._cancelPromise = null
+    })
+  }
+
+  /**
+   * Calls optional streamAdapter.cancel first (so the composer stays in a
+   * running/stop state), then aborts the local stream and background tasks.
+   */
+  private async performCancel(): Promise<void> {
+    const conversationId = this._conversationId
+    const abortController = this._abortController
+    const backgroundTaskIds = [...this._backgroundTasks.keys()]
+    const cancel = this.config.streamAdapter.cancel
+    if (cancel && conversationId && !conversationId.startsWith('temp')) {
+      try {
+        await cancel(conversationId)
+      } catch {
+        // Local abort still runs so the user is never stuck streaming.
+      }
     }
 
-    this._abortController.abort()
+    // Server cancel can end the original run during the await, after which
+    // drainIdleWaiters may start a new run. Only abort the controller we
+    // snapshotted — never a follow-on run the user did not stop.
+    if (abortController && this._abortController === abortController) {
+      abortController.abort()
+    }
+
+    this.cancelBackgroundTasks(backgroundTaskIds)
   }
 
   public reset(messages: Message[] = []): void {

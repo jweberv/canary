@@ -1,10 +1,12 @@
 import {
   Children,
   cloneElement,
+  CSSProperties,
   forwardRef,
   HTMLAttributes,
   isValidElement,
   ReactNode,
+  Ref,
   TdHTMLAttributes,
   ThHTMLAttributes
 } from 'react'
@@ -48,6 +50,27 @@ export interface TableRootV2Props extends HTMLAttributes<HTMLTableElement>, Vari
   tableClassName?: string
   disableHighlightOnHover?: boolean
   paginationProps?: PaginationProps
+  /**
+   * Opt-in sticky mode. Renders a single, well-defined scroll viewport
+   * (`cn-table-v2-viewport`) so sticky-positioned cells (e.g. sticky headers)
+   * resolve against one deterministic scroll container.
+   * When unset, the DOM structure and overflow behavior are unchanged.
+   */
+  stickyHeader?: boolean
+  /**
+   * Maximum height of the scroll viewport. Only applies in sticky mode.
+   */
+  maxHeight?: CSSProperties['maxHeight']
+  /**
+   * Ref forwarded to the scroll viewport element. Only applies in sticky mode.
+   */
+  viewportRef?: Ref<HTMLDivElement>
+  /**
+   * Optional overlay rendered as a sibling of `<table>` inside the scroll
+   * viewport. Used by DataTable for a column-resize indicator that is not
+   * clipped by header cells.
+   */
+  overlay?: ReactNode
 }
 
 const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
@@ -59,6 +82,11 @@ const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
       tableClassName,
       disableHighlightOnHover = false,
       paginationProps: { className: paginationClassName, ...paginationProps } = {} as PaginationProps,
+      stickyHeader = false,
+      maxHeight,
+      viewportRef,
+      overlay,
+      style,
       ...props
     },
     ref
@@ -68,11 +96,23 @@ const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
         'cn-table-v2-container',
         tableVariants({ size, variant }),
         { 'cn-table-v2-highlight-hover': !disableHighlightOnHover },
+        { 'cn-table-v2-sticky': stickyHeader },
         className
       )}
     >
-      <div className="overflow-x-auto">
-        <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} {...props} />
+      <div
+        className={cn(stickyHeader ? 'cn-table-v2-viewport' : 'overflow-x-auto')}
+        style={{ maxHeight: stickyHeader ? maxHeight : undefined }}
+        ref={stickyHeader ? viewportRef : undefined}
+      >
+        {overlay !== undefined ? (
+          <div className="cn-table-v2-overlay-host" style={style}>
+            <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} style={style} {...props} />
+            {overlay}
+          </div>
+        ) : (
+          <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} style={style} {...props} />
+        )}
       </div>
       {paginationProps && (
         <Pagination
@@ -185,6 +225,12 @@ export interface TableHeadProps extends ThHTMLAttributes<HTMLTableCellElement> {
   containerProps?: FlexProps
   hideDivider?: boolean
   contentClassName?: string
+  /**
+   * Optional chrome rendered as a direct child of the `<th>`, outside the
+   * label/sort layout. Used by DataTable for column resize handles so they
+   * can be positioned against the cell boundary.
+   */
+  resizeHandle?: ReactNode
 }
 
 const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
@@ -198,6 +244,7 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
       hideDivider = false,
       containerProps,
       contentClassName,
+      resizeHandle,
       ...props
     },
     ref
@@ -240,13 +287,15 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
         className={cn(
           'cn-table-v2-head',
           {
-            'cn-table-v2-head-sortable': sortable
+            'cn-table-v2-head-sortable': sortable,
+            'cn-table-v2-head-resizable': !!resizeHandle
           },
           className
         )}
         {...props}
       >
         {contentElement}
+        {resizeHandle}
       </th>
     )
   }

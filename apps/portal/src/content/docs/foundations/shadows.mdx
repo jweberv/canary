@@ -19,6 +19,9 @@ The design system maps specific shadow levels to component categories:
           <th className="cn-table-v2-head" style={{ width: "160px" }}>
             Shadow
           </th>
+          <th className="cn-table-v2-head" style={{ width: "96px" }}>
+            Preview
+          </th>
           <th className="cn-table-v2-head">Components</th>
         </tr>
       </thead>
@@ -26,11 +29,23 @@ The design system maps specific shadow levels to component categories:
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-0`</td>
           <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-0 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
+          <td className="cn-table-v2-cell">
             Flat elements, disabled states, mobile resets
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-1`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-1 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             Buttons (rest state), form inputs, subtle UI
           </td>
@@ -38,11 +53,23 @@ The design system maps specific shadow levels to component categories:
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-2`</td>
           <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-2 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
+          <td className="cn-table-v2-cell">
             Cards, containers, default elevation
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-3`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-3 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             Toasts, elevated cards, hover states
           </td>
@@ -50,21 +77,45 @@ The design system maps specific shadow levels to component categories:
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-4`</td>
           <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-4 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
+          <td className="cn-table-v2-cell">
             Dropdowns, popovers, tooltips, context menus
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-5`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-5 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">Dialogs, drawers, modal overlays</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-6`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-6 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             Full-screen overlays, maximum emphasis
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-inner`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-inner bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             Inset containers, recessed surfaces
           </td>
@@ -191,54 +242,40 @@ Seven levels (0–6) plus an inner shadow provide a complete elevation vocabular
 <DocsPage.ComponentExample
   hideCode
   client:only
-  code={`<Layout.Vertical gap="lg" className="min-w-[500px] p-cn-xl bg-cn-0">
-  <Layout.Horizontal gap="lg" className="flex-wrap">
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-0 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">0 — none</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-1 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">1 — subtle</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-2 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">2 — default</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-  </Layout.Horizontal>
-  <Layout.Horizontal gap="lg" className="flex-wrap">
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-3 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">3 — medium</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-4 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">4 — prominent</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-5 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">5 — strong</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-  </Layout.Horizontal>
-  <Layout.Horizontal gap="lg" className="flex-wrap" justify="center">
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px] max-w-[200px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-6 p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">6 — max</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-    <Layout.Vertical gap="xs" align="center" className="flex-1 min-w-[140px] max-w-[200px]">
-      <Layout.Horizontal className="bg-cn-1 rounded-cn-3 shadow-cn-inner p-cn-lg w-full h-20" justify="center" align="center">
-        <Text variant="caption-normal" color="foreground-3">inner</Text>
-      </Layout.Horizontal>
-    </Layout.Vertical>
-  </Layout.Horizontal>
-</Layout.Vertical>`}
+  code={`<div className="space-y-cn-md w-full">
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">0 — none</span>
+    <div className="shadow-cn-0 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">1 — subtle</span>
+    <div className="shadow-cn-1 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">2 — default</span>
+    <div className="shadow-cn-2 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">3 — medium</span>
+    <div className="shadow-cn-3 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">4 — prominent</span>
+    <div className="shadow-cn-4 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">5 — strong</span>
+    <div className="shadow-cn-5 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">6 — max</span>
+    <div className="shadow-cn-6 bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+  <div className="flex items-center gap-cn-md">
+    <span className="text-cn-size-2 text-cn-3 w-40 shrink-0 font-mono">inner</span>
+    <div className="shadow-cn-inner bg-cn-1 border border-cn-borders-3 rounded-cn-3 h-16 w-40" />
+  </div>
+</div>`}
 />
 
 ## Shadow Geometry
@@ -251,6 +288,9 @@ Each level defines specific offset, blur, and spread values. Levels 2–5 use <s
       <thead className="cn-table-v2-header">
         <tr className="cn-table-v2-row">
           <th className="cn-table-v2-head">Level</th>
+          <th className="cn-table-v2-head" style={{ width: "96px" }}>
+            Preview
+          </th>
           <th className="cn-table-v2-head">CSS Value</th>
           <th className="cn-table-v2-head">Layers</th>
         </tr>
@@ -258,16 +298,34 @@ Each level defines specific offset, blur, and spread values. Levels 2–5 use <s
       <tbody className="cn-table-v2-body">
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-0`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-0 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">`0 0 0 0`</td>
           <td className="cn-table-v2-cell">Single</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-1`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-1 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">`0 1px 2px 0`</td>
           <td className="cn-table-v2-cell">Single</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-2`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-2 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             `0 1px 3px 0` , `0 1px 15px -1px`
           </td>
@@ -276,12 +334,24 @@ Each level defines specific offset, blur, and spread values. Levels 2–5 use <s
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-3`</td>
           <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-3 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
+          <td className="cn-table-v2-cell">
             `0 4px 6px -1px` , `0 2px 8px -2px`
           </td>
           <td className="cn-table-v2-cell">Dual</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-4`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-4 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">
             `0 10px 15px -3px` , `0 4px 8px -4px`
           </td>
@@ -290,17 +360,35 @@ Each level defines specific offset, blur, and spread values. Levels 2–5 use <s
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-5`</td>
           <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-5 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
+          <td className="cn-table-v2-cell">
             `0 20px 25px -5px` , `0 8px 10px -6px`
           </td>
           <td className="cn-table-v2-cell">Dual</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-6`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-6 bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">`0 25px 50px -12px`</td>
           <td className="cn-table-v2-cell">Single</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">`shadow-inner`</td>
+          <td className="cn-table-v2-cell">
+            <div
+              className="shadow-cn-inner bg-cn-1 border border-cn-borders-3 rounded-cn-3"
+              style={{ width: "48px", height: "48px" }}
+            />
+          </td>
           <td className="cn-table-v2-cell">`inset 0 0 4.5px 0`</td>
           <td className="cn-table-v2-cell">Single (inset)</td>
         </tr>

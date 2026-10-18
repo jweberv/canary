@@ -1,7 +1,15 @@
 import { JSX, ReactNode } from 'react'
+import { ClassNames, DayPickerRangeProps } from 'react-day-picker'
 
 import { ComboBoxOptions } from '@components/filters/filters-bar/actions/variants/combo-box'
 import { MultiSelectOption, MultiSelectProps } from '@components/multi-select'
+
+import type { DateRangeV2Config, DateRangeV2FilterValue } from '../date-range-v2/types'
+
+export type DateRangeCalendarProps = Omit<
+  DayPickerRangeProps,
+  'mode' | 'numberOfMonths' | 'selected' | 'onSelect' | 'month' | 'onMonthChange' | 'classNames'
+>
 
 export type Parser<T> = {
   parse: (value: string) => T
@@ -16,7 +24,8 @@ export enum FilterFieldTypes {
   Custom = 'custom',
   MultiSelect = 'multiselect',
   Checkbox = 'checkbox',
-  MultiTag = 'multitag'
+  MultiTag = 'multitag',
+  DateRangeV2 = 'daterangev2'
 }
 
 export interface DateRangeValue {
@@ -58,6 +67,7 @@ interface FilterOptionConfigBase<Key extends string, V = undefined> {
   defaultValue?: V
   isDefaultValue?: boolean
   sticky?: boolean
+  group?: string
 }
 
 interface ComboBoxFilterOptionConfig<Key extends string = string> extends FilterOptionConfigBase<Key, ComboBoxOptions> {
@@ -124,13 +134,22 @@ interface DateRangeFilterOptionConfig<T extends string = string> extends FilterO
   filterFieldConfig?: {
     presets?: DateRangePreset[]
     showCustomRange?: boolean
+    calendarProps?: DateRangeCalendarProps
+    calendarClassNames?: ClassNames
   }
+}
+
+interface DateRangeV2FilterOptionConfig<T extends string = string>
+  extends FilterOptionConfigBase<T, DateRangeV2FilterValue> {
+  type: FilterFieldTypes.DateRangeV2
+  filterFieldConfig?: DateRangeV2Config
 }
 
 type FilterOptionConfig<T extends string = string, V = Record<string, unknown>> =
   | ComboBoxFilterOptionConfig<T>
   | CalendarFilterOptionConfig<T>
   | DateRangeFilterOptionConfig<T>
+  | DateRangeV2FilterOptionConfig<T>
   | TextFilterOptionConfig<T>
   | CheckboxFilterOptionConfig<T>
   | MultiSelectFilterOptionConfig<T>
@@ -148,5 +167,6 @@ export type {
   CheckboxFilterOptionConfig,
   TextFilterOptionConfig,
   CalendarFilterOptionConfig,
-  DateRangeFilterOptionConfig
+  DateRangeFilterOptionConfig,
+  DateRangeV2FilterOptionConfig
 }

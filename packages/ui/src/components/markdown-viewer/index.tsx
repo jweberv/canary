@@ -51,8 +51,7 @@ const markdownViewerVariants = cva('', {
   variants: {
     variant: {
       default: '',
-      sm: 'markdown-sm',
-      xs: 'markdown-xs'
+      sm: 'markdown-sm'
     }
   },
   defaultVariants: {
@@ -111,7 +110,7 @@ const MarkdownViewerLocal = ({
 
   const filteredSource = useMemo(() => source.split('\n').filter(line => line !== '' && line !== '```'), [source])
 
-  const styles: CSSProperties = maxHeight ? { maxHeight } : {}
+  const styles: CSSProperties = maxHeight ? { maxHeight, overflowY: 'auto' } : {}
 
   const rewriteRelativeLinks = useCallback(
     (href: string) => {

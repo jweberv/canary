@@ -3,6 +3,12 @@ import { ThreadListItemState } from './thread'
 
 export interface StreamAdapter {
   stream(request: StreamRequest): AsyncIterable<StreamChunk>
+  /**
+   * Optional server-side cancel for an in-flight conversation. Invoked by
+   * `cancelRun` before the local AbortController fires, so the UI can stay
+   * in a running/stop state until the backend acknowledges cancel.
+   */
+  cancel?(conversationId: string): Promise<void>
 }
 
 export type StreamEvent =
@@ -49,12 +55,23 @@ export type StreamEvent =
       [key: string]: any // Allow any additional properties
     }
 
-export type SystemEventType = 'action_completed' | 'action_cancelled'
+export type SystemEventType =
+  // HITL responses to an elicitation card (Accept / Deny). These resume the
+  // agent so it can continue the task.
+  | 'action_completed'
+  | 'action_cancelled'
+  // Sideband/background status update driven by a UI task (e.g. a card polling
+  // an execution status API). The backend acknowledges non-terminal updates
+  // without waking the agent and resumes it on terminal states.
+  | 'pipeline_status_updated'
 
 export interface SystemEvent {
   event_type: SystemEventType
   capability_id: string
-  result?: { success: boolean; [key: string]: unknown }
+  // Event payload. `success` applies to HITL action results; background/status
+  // events carry arbitrary fields (e.g. { source, status, terminal }), so
+  // `success` is optional and additional keys are allowed.
+  result?: { success?: boolean; [key: string]: unknown }
   target_page_id?: string
 }
 

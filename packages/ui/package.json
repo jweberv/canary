@@ -1,7 +1,7 @@
 {
   "name": "@harnessio/ui",
   "description": "Harness Canary UI component library",
-  "version": "0.5.52",
+  "version": "1.4.0",
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
@@ -29,6 +29,7 @@
     "./markdown-preview-styles.css": "./src/components/markdown-viewer/style.css",
     "./context": "./dist/context.js",
     "./types": "./dist/types.js",
+    "./yaml-output": "./dist/yaml-output.js",
     "./.claude/manifest.json": "./.claude/manifest.json"
   },
   "files": [
@@ -76,11 +77,11 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@git-diff-view/file": "^0.0.30",
     "@git-diff-view/react": "^0.0.30",
-    "@git-diff-view/shiki": "^0.0.21",
+    "@git-diff-view/shiki": "0.1.7",
     "@harnessio/core-design-system": "workspace:*",
     "@harnessio/pipeline-graph": "workspace:*",
     "@harnessio/yaml-editor": "workspace:*",
-    "@hookform/resolvers": "^3.6.0",
+    "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-aspect-ratio": "^1.1.1",
@@ -116,6 +117,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.2.0",
     "diff2html": "3.4.22",
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.1.5",
@@ -130,7 +132,7 @@
     "monaco-editor": "^0.40.0",
     "overlayscrollbars": "^2.10.0",
     "react-day-picker": "^8.10.1",
-    "react-hook-form": "^7.28.0",
+    "react-hook-form": "^7.55.0",
     "react-i18next": "^15.1.1",
     "react-intersection-observer": "^9.15.1",
     "react-resizable-panels": "^2.0.19",
@@ -144,7 +146,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
     "yaml": "^2.7.0",
-    "zod": "^3.23.8"
+    "zod": "^4.0.0"
   },
   "peerDependencies": {
     "react": "^17.0.2",
@@ -158,6 +160,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.9.0",
     "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.3",
     "@vitejs/plugin-react-swc": "^3.8.0",
     "@vitest/coverage-istanbul": "^3.0.6",
     "@vitest/ui": "^3.0.6",

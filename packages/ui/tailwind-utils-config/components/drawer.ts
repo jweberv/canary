@@ -139,7 +139,7 @@ export default {
     },
 
     '&-tagline': {
-      font: 'var(--cn-caption-light)',
+      font: 'var(--cn-caption-normal)',
       color: 'var(--cn-text-2)'
     },
 
@@ -468,6 +468,10 @@ export default {
 
       '&-icon': {
         '@apply shrink-0': ''
+      },
+
+      '&-description': {
+        '@apply line-clamp-2': ''
       },
 
       '&-metadata': {

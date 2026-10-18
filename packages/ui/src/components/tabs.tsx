@@ -18,10 +18,12 @@ import type { NavLinkRenderProps } from 'react-router-dom'
 import { CounterBadge } from '@/components/counter-badge'
 import { IconPropsV2, IconV2 } from '@/components/icon-v2'
 import { LogoPropsV2, LogoV2 } from '@/components/logo-v2'
+import { StatusBadge, StatusBadgeProps } from '@/components/status-badge/status-badge'
 import { NavLinkProps, useRouterContext } from '@/context'
 import { afterFrames, cn, getShadowActiveElement, useMergeRefs } from '@/utils'
 import * as TabsPrimitive from '@radix-ui/react-tabs'
 import { cva, type VariantProps } from 'class-variance-authority'
+import omit from 'lodash-es/omit'
 
 const tabsListVariants = cva('cn-tabs-list', {
   variants: {
@@ -245,6 +247,23 @@ const TabsList = forwardRef<ElementRef<typeof TabsPrimitive.List>, TabsListProps
       }
     })
 
+    const reserveStrongTabWidths = useRef(() => {
+      const contentEl = contentRef.current
+      if (!contentEl) return
+
+      const triggers = contentEl.querySelectorAll<HTMLElement>('[role="tab"]')
+      triggers.forEach(trigger => {
+        trigger.style.minWidth = ''
+        const restingWidth = trigger.getBoundingClientRect().width
+
+        trigger.classList.add('cn-tabs-trigger-measure-strong')
+        const strongWidth = trigger.getBoundingClientRect().width
+        trigger.classList.remove('cn-tabs-trigger-measure-strong')
+
+        trigger.style.minWidth = `${Math.ceil(Math.max(restingWidth, strongWidth))}px`
+      })
+    })
+
     useEffect(() => {
       scrollActiveTabIntoView.current()
     }, [activeTabValue])
@@ -254,6 +273,7 @@ const TabsList = forwardRef<ElementRef<typeof TabsPrimitive.List>, TabsListProps
       const contentEl = contentRef.current
       if (!container || !contentEl) return
 
+      reserveStrongTabWidths.current()
       checkOverflow.current()
       updateFadeIndicators.current()
       scrollActiveTabIntoView.current()
@@ -280,6 +300,12 @@ const TabsList = forwardRef<ElementRef<typeof TabsPrimitive.List>, TabsListProps
           attributes: true,
           attributeFilter: ['class']
         })
+      })
+
+      void document.fonts?.ready.then(() => {
+        reserveStrongTabWidths.current()
+        checkOverflow.current()
+        updateFadeIndicators.current()
       })
 
       return () => {
@@ -386,11 +412,17 @@ const TabsList = forwardRef<ElementRef<typeof TabsPrimitive.List>, TabsListProps
 )
 TabsList.displayName = TabsPrimitive.List.displayName
 
+export interface TabBadgeProps extends Pick<StatusBadgeProps, 'size' | 'theme'> {
+  content: string
+  variant?: StatusBadgeProps['variant']
+}
+
 interface TabsTriggerBaseProps {
   value: string
   children?: ReactNode
   className?: string
   counter?: number | null
+  badge?: string | TabBadgeProps
 }
 
 interface TabsTriggerBasePropsWithIcon extends TabsTriggerBaseProps {
@@ -426,7 +458,7 @@ interface TabsTriggerComponent {
 }
 
 const TabsTrigger = forwardRef<HTMLButtonElement | HTMLAnchorElement, TabsTriggerProps>((props, ref) => {
-  const { className, children, value, icon, logo, counter, ...restProps } = props
+  const { className, children, value, icon, logo, counter, badge, ...restProps } = props
   const { variant, activeClassName } = useContext(TabsListContext)
   const { type, activeTabValue, onValueChange } = useContext(TabsContext)
   const { NavLink, isRouterVersion5 } = useRouterContext()
@@ -437,6 +469,16 @@ const TabsTrigger = forwardRef<HTMLButtonElement | HTMLAnchorElement, TabsTrigge
       {!!logo && <LogoV2 size="xs" name={logo} />}
       {children}
       {Number.isInteger(counter) && <CounterBadge>{counter}</CounterBadge>}
+      {!!badge &&
+        (typeof badge === 'string' ? (
+          <StatusBadge size="sm" variant="status">
+            {badge}
+          </StatusBadge>
+        ) : (
+          <StatusBadge size="sm" variant="status" {...omit(badge, ['content'])}>
+            {badge.content}
+          </StatusBadge>
+        ))}
     </>
   )
 

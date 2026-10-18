@@ -21,6 +21,18 @@
   body {
     line-height: initial;
   }
+
+  html[class^='dark-'],
+  html.dark {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html[class^='dark-'] body,
+  html.dark body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
 /* This should be removed when we completely migrate to the new design system from NG-UI */
@@ -51,21 +63,6 @@
 }
 
 @layer utilities {
-  /*
-    Sidebar responsive visibility class.
-    Uses a specific class name to avoid conflicts with MFE host apps that may have
-    their own .hidden class (e.g., harness-core-ui's Tailwind CSS).
-  */
-  .cn-sidebar-root-responsive {
-    display: none;
-  }
-
-  @media (min-width: 768px) {
-    .cn-sidebar-root-responsive {
-      display: block;
-    }
-  }
-
   /*
     Handy CSS class to prevent Input background color becomes yellow in Chrome on autofill.
     Works as well with inputs with transparent background.
@@ -149,7 +146,7 @@
 }
 
 .cn-graph-bg-size {
-  background-size: 22px 22px;
+  background-size: 12px 12px;
 }
 
 .diff-style-root tr {

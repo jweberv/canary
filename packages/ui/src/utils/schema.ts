@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 // Assuming these are defined elsewhere by the user
 export const regexIdentifier = /^[a-zA-Z_][0-9a-zA-Z_]*$/
@@ -40,11 +40,11 @@ export const identifierSchema = (config?: {
 }) =>
   z
     .string()
+    .min(1, config?.requiredErrorMsg ? config?.requiredErrorMsg : 'Identifier is required')
     .regex(
       config?.allowHyphen ? hyphenRegexIdentifier : regexIdentifier,
       config?.regexErrorMsg ? config?.regexErrorMsg : 'Identifier can only contain alphanumerics, _ and $'
     )
-    .min(1, config?.requiredErrorMsg ? config?.requiredErrorMsg : 'Identifier is required')
     .refine(val => !illegalIdentifiers.includes(val), {
       message: `Identifier must not be one of the following values: ${illegalIdentifiers.join(', ')}`
     })

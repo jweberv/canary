@@ -1,4 +1,15 @@
-import { Fragment, useEffect, useMemo } from 'react'
+import {
+  CSSProperties,
+  Fragment,
+  KeyboardEvent,
+  MouseEvent,
+  TouchEvent,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 
 import { Button, Checkbox, IconV2, PaginationProps, Table, tableVariants } from '@/components'
 import {
@@ -8,8 +19,11 @@ import {
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
+  getSortedRowModel,
+  Header,
   OnChangeFn,
   Row,
+  RowPinningState,
   RowSelectionState,
   SortingState,
   TableOptions,
@@ -21,7 +35,8 @@ import { type VariantProps } from 'class-variance-authority'
 
 import './types'
 
-import { getCommonPinningStyles } from './utils'
+import { useSpacerHeight } from './use-spacer-height'
+import { getStickyCellStyles, type StickyCellVertical } from './utils'
 
 export interface DataTableProps<TData> {
   data: TData[]
@@ -34,6 +49,11 @@ export interface DataTableProps<TData> {
   disableHighlightOnHover?: boolean
   className?: string
   currentSorting?: SortingState
+  /**
+   * See {@link https://tanstack.com/table/latest/docs/api/features/sorting#manualsorting React Table docs}.
+   * Unless disabled, you must sort the data yourself (such as on the server side).
+   */
+  manualSorting?: boolean
   currentRowSelection?: RowSelectionState
   columnPinning?: ColumnPinningState
 
@@ -107,11 +127,42 @@ export interface DataTableProps<TData> {
    */
   getSubRows?: (originalRow: TData, index: number) => TData[] | undefined
   /**
-   * @internal
-   * Enable column resizing - NOT READY FOR PUBLIC USE
-   * This prop is for internal development only and should not be used
+   * Enable column resizing. Defaults to false. Opt individual columns out with
+   * `ColumnDef.enableResizing`, and set initial/min/max widths with `size`,
+   * `minSize`, and `maxSize`. Only leaf columns expose resize handles.
    */
-  _enableColumnResizing?: boolean
+  enableColumnResizing?: boolean
+  /**
+   * Opt-in sticky headers. Renders the table inside a single scroll viewport
+   * so header cells stick to the top while the body scrolls.
+   * Offsets support up to two stacked header rows (grouped headers).
+   */
+  stickyHeader?: boolean
+  /**
+   * Maximum height of the table's scroll viewport.
+   * Only applies when `stickyHeader` is enabled.
+   */
+  maxHeight?: CSSProperties['maxHeight']
+  /**
+   * Opt-in row pinning state (TanStack `RowPinningState`). Only bottom-pinned
+   * rows are rendered: they appear in a `<tfoot>` whose cells stick to the
+   * bottom of the scroll viewport (`stickyHeader` is required for sticking).
+   * Pin rows by appending them to `data` and listing their `getRowId` ids in
+   * `rowPinning.bottom`. Only a single bottom-pinned row is supported — if
+   * multiple ids are passed, only the last (bottom-most) row is rendered;
+   * without accumulated offsets multiple rows would overlap at `bottom: 0`.
+   * `keepPinnedRows` is left at its default (`true`), so
+   * pinned rows survive pagination and filtering.
+   */
+  rowPinning?: RowPinningState
+  /**
+   * Callback for when row pinning changes.
+   */
+  onRowPinningChange?: OnChangeFn<RowPinningState>
+  /**
+   * Whether rows can be pinned. See TanStack `enableRowPinning`.
+   */
+  enableRowPinning?: boolean | ((row: Row<TData>) => boolean)
 }
 
 export const DataTable = function DataTable<TData>({
@@ -139,10 +190,16 @@ export const DataTable = function DataTable<TData>({
   onExpandedChange: externalOnExpandedChange,
   renderSubComponent,
   getSubRows,
-  _enableColumnResizing = false,
+  enableColumnResizing = false,
   getRowId,
   visibleColumns,
-  columnPinning = { left: [], right: [] }
+  columnPinning = { left: [], right: [] },
+  manualSorting = true,
+  stickyHeader = false,
+  maxHeight,
+  rowPinning,
+  onRowPinningChange: externalOnRowPinningChange,
+  enableRowPinning
 }: DataTableProps<TData>) {
   const tableColumns = useMemo(() => {
     // Start with the base columns
@@ -177,7 +234,8 @@ export const DataTable = function DataTable<TData>({
               />
             )
           },
-          size: 20
+          size: 50,
+          enableResizing: false
         },
         ...cols
       ]
@@ -249,7 +307,8 @@ export const DataTable = function DataTable<TData>({
                 </Button>
               ) : null
             },
-            size: 20
+            size: 48,
+            enableResizing: false
           },
           ...cols
         ]
@@ -266,9 +325,10 @@ export const DataTable = function DataTable<TData>({
       getCoreRowModel: getCoreRowModel(),
 
       getRowId: getRowId,
-      // Enable manual sorting (server-side sorting)
-      manualSorting: true,
-      // Use the external sorting change handler, we link it to the onSortingChange handler so we dont have to do shenannigans to figure out which column was clicked, and its sort state
+      // Manual (server-side) sorting
+      manualSorting,
+      getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+      // Use the external sorting change handler, we link it to the onSortingChange handler so we don't have to do shenanigans to figure out which column was clicked, and its sort state
       //  React table gives it to us directly
       onSortingChange: externalOnSortingChange,
       // Enable row selection if specified
@@ -296,15 +356,21 @@ export const DataTable = function DataTable<TData>({
             manualExpanding: true
           }),
       // Enable column resizing if specified
-      enableColumnResizing: _enableColumnResizing,
+      enableColumnResizing,
       columnResizeMode: 'onChange',
+      // Row pinning: controlled state when the prop is provided, uncontrolled otherwise.
+      // keepPinnedRows stays at its TanStack default (true) so pinned rows
+      // survive pagination and filtering.
+      enableRowPinning,
+      onRowPinningChange: externalOnRowPinningChange,
       // We pass the currentSorting, rowSelection, and expanded state so that react-table internally knows what state to maintain
 
       state: {
         sorting: currentSorting,
         rowSelection: currentRowSelection || {},
         expanded: currentExpanded ?? (initiallyExpandAllRows ? true : {}),
-        columnPinning
+        columnPinning,
+        ...(rowPinning !== undefined ? { rowPinning } : {})
       }
     }),
     [
@@ -320,12 +386,16 @@ export const DataTable = function DataTable<TData>({
       externalOnExpandedChange,
       getRowCanExpand,
       getSubRows,
-      _enableColumnResizing,
+      enableColumnResizing,
       currentSorting,
       currentRowSelection,
       initiallyExpandAllRows,
       currentExpanded,
-      columnPinning
+      columnPinning,
+      manualSorting,
+      rowPinning,
+      externalOnRowPinningChange,
+      enableRowPinning
     ]
   )
 
@@ -351,6 +421,155 @@ export const DataTable = function DataTable<TData>({
     [columnPinning]
   )
 
+  /**
+   * Measured height of the first header row, used as the sticky `top` offset
+   * for the second header row in grouped-header tables. The CSS variable
+   * `--cn-table-header-row-h` provides a no-JS fallback until measured.
+   */
+  const [firstHeaderRowEl, setFirstHeaderRowEl] = useState<HTMLTableRowElement | null>(null)
+  const [firstHeaderRowHeight, setFirstHeaderRowHeight] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!stickyHeader || !firstHeaderRowEl) return
+
+    const measure = () => {
+      const height = firstHeaderRowEl.getBoundingClientRect().height
+      // Zero means the row is not laid out (hidden container) — keep the CSS variable fallback.
+      if (height <= 0) return
+
+      setFirstHeaderRowHeight(prev => (prev !== null && Math.abs(prev - height) < 0.5 ? prev : height))
+    }
+
+    measure()
+
+    if (typeof ResizeObserver === 'undefined') return
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(firstHeaderRowEl)
+    return () => observer.disconnect()
+  }, [stickyHeader, firstHeaderRowEl, tableColumns, data])
+
+  const [headerSectionEl, setHeaderSectionEl] = useState<HTMLTableSectionElement | null>(null)
+  const [headerMetrics, setHeaderMetrics] = useState<{ thead: number; leaf: number } | null>(null)
+
+  useEffect(() => {
+    if (!enableColumnResizing || !headerSectionEl) return
+
+    const measure = () => {
+      const thead = headerSectionEl.getBoundingClientRect().height
+      if (thead <= 0) return
+
+      const leafRow = headerSectionEl.querySelector('tr:last-child')
+      const leaf = leafRow?.getBoundingClientRect().height ?? thead
+
+      setHeaderMetrics(prev =>
+        prev !== null && Math.abs(prev.thead - thead) < 0.5 && Math.abs(prev.leaf - leaf) < 0.5 ? prev : { thead, leaf }
+      )
+    }
+
+    measure()
+
+    if (typeof ResizeObserver === 'undefined') return
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(headerSectionEl)
+    return () => observer.disconnect()
+  }, [enableColumnResizing, headerSectionEl, tableColumns, data])
+
+  const rowPinningEnabled = rowPinning !== undefined
+  // Bottom-pinned rows render in a tfoot; top pinning is accepted in state
+  // but not rendered (no use case yet). When row pinning is off, the body
+  // renders from the full row model exactly as before.
+  // Bottom pinning supports a single row: with multiple ids all rows would
+  // stick to `bottom: 0` and overlap, so only the last (bottom-most) id is
+  // rendered. Offset accumulation for multi-row stacking is a follow-up.
+  const bottomRows = rowPinningEnabled ? table.getBottomRows().slice(-1) : []
+  const hasBottomRows = bottomRows.length > 0
+  const bodyRows = rowPinningEnabled ? table.getCenterRows() : table.getRowModel().rows
+
+  const resizingHeader = enableColumnResizing
+    ? table.getLeafHeaders().find(header => header.column.getIsResizing())
+    : undefined
+  const resizeIndicatorOffset = resizingHeader ? resizingHeader.getStart() + resizingHeader.getSize() : 0
+  const resizeIndicatorOnLeafRow = !!resizingHeader?.column.parent
+  const resizeIndicatorHeight = resizeIndicatorOnLeafRow
+    ? (headerMetrics?.leaf ?? 'var(--cn-table-header-min)')
+    : (headerMetrics?.thead ?? 'var(--cn-table-header-min)')
+  const resizeIndicatorTop =
+    resizeIndicatorOnLeafRow && headerMetrics ? Math.max(0, headerMetrics.thead - headerMetrics.leaf) : 0
+  const resizeIndicatorRef = useRef<HTMLDivElement>(null)
+  const columnSizing = table.getState().columnSizing
+
+  useLayoutEffect(() => {
+    const indicator = resizeIndicatorRef.current
+    if (!indicator || !resizingHeader || !headerSectionEl) return
+
+    const handle = Array.from(headerSectionEl.querySelectorAll<HTMLElement>('[data-column-resizer]')).find(
+      candidate => candidate.dataset.columnId === resizingHeader.column.id
+    )
+    const cell = handle?.closest('th')
+    const tableElement = cell?.closest('table')
+    if (!cell || !tableElement) return
+
+    const cellRect = cell.getBoundingClientRect()
+    const tableRect = tableElement.getBoundingClientRect()
+    if (cellRect.width <= 0) return
+
+    const renderedBoundary = cellRect.right - tableRect.left
+    indicator.style.transform = `translate(${renderedBoundary - 1}px, ${resizeIndicatorTop}px)`
+  }, [columnSizing, headerSectionEl, resizeIndicatorTop, resizingHeader])
+
+  const [viewportEl, setViewportEl] = useState<HTMLElement | null>(null)
+  const [spacerRowEl, setSpacerRowEl] = useState<HTMLTableRowElement | null>(null)
+  const spacerHeight = useSpacerHeight({
+    viewportEl,
+    spacerRowEl,
+    enabled: rowPinningEnabled && hasBottomRows
+  })
+
+  const renderRow = (row: Row<TData>, vertical?: StickyCellVertical) => {
+    const isPinned = !!vertical
+    return (
+      <Fragment key={row.id}>
+        <Table.Row
+          className={cn({ 'cn-table-v2-row-pinned': isPinned }, getRowClassName?.(row))}
+          data-pinned={isPinned ? 'bottom' : undefined}
+          onClick={onRowClick && !getIsRowDisabled?.(row) ? () => onRowClick(row.original, row.index) : undefined}
+          to={getRowLink && !getIsRowDisabled?.(row) ? getRowLink(row.original, row.index) : undefined}
+          selected={enableRowSelection ? row.getIsSelected() : undefined}
+          disabled={getIsRowDisabled?.(row)}
+        >
+          {row.getVisibleCells().map(cell => {
+            const column = cell.column
+            return (
+              <Table.Cell
+                key={cell.id}
+                // Temporary fix to prevent text bleeding in cell when it is pinned
+                className={cn({ 'cn-table-v2-cell-pinned': column.getIsPinned() })}
+                style={{
+                  ...getStickyCellStyles<TData>({ column, vertical }),
+                  width: column.getSize(),
+                  minWidth: column.columnDef.minSize ?? column.getSize(),
+                  maxWidth: column.columnDef.maxSize ?? column.getSize()
+                }}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </Table.Cell>
+            )
+          })}
+        </Table.Row>
+        {row.getIsExpanded() && renderSubComponent && !getSubRows && (
+          <Table.Row className="bg-cn-2">
+            <Table.Cell className="bg-transparent"></Table.Cell>
+            <Table.Cell className="bg-transparent" colSpan={row.getAllCells().length - 1}>
+              {renderSubComponent({ row })}
+            </Table.Cell>
+          </Table.Row>
+        )}
+      </Fragment>
+    )
+  }
+
   return (
     <Table.Root
       className={className}
@@ -358,19 +577,42 @@ export const DataTable = function DataTable<TData>({
        *  from resizing based on their content.
        */
       tableClassName={cn({ 'table-fixed': hasPinnedColumns })}
+      style={enableColumnResizing ? { minWidth: table.getTotalSize() } : undefined}
       size={size}
       variant={variant}
       disableHighlightOnHover={disableHighlightOnHover}
       paginationProps={paginationProps}
+      stickyHeader={stickyHeader}
+      maxHeight={maxHeight}
+      viewportRef={stickyHeader ? setViewportEl : undefined}
+      overlay={
+        enableColumnResizing ? (
+          resizingHeader ? (
+            <div
+              ref={resizeIndicatorRef}
+              className="cn-table-v2-column-resize-indicator"
+              data-column-resize-indicator=""
+              style={{
+                height: resizeIndicatorHeight,
+                transform: `translate(${resizeIndicatorOffset - 1}px, ${resizeIndicatorTop}px)`
+              }}
+            />
+          ) : null
+        ) : undefined
+      }
     >
-      <Table.Header>
+      <Table.Header ref={enableColumnResizing ? setHeaderSectionEl : undefined}>
         {(() => {
           const headerGroups = table.getHeaderGroups()
           const totalHeaderRows = headerGroups.length
           const hasGroupedHeaders = totalHeaderRows > 1
 
           return headerGroups.map((headerGroup, rowIdx) => (
-            <Table.Row key={headerGroup.id} data-header-depth={rowIdx}>
+            <Table.Row
+              key={headerGroup.id}
+              data-header-depth={rowIdx}
+              ref={stickyHeader && rowIdx === 0 ? setFirstHeaderRowEl : undefined}
+            >
               {headerGroup.headers.map(header => {
                 const column = header.column
                 const meta = column.columnDef.meta
@@ -400,10 +642,10 @@ export const DataTable = function DataTable<TData>({
                     rowSpan={rowSpan > 1 ? rowSpan : undefined}
                     key={header.id}
                     data-header-depth={rowIdx}
+                    data-sticky={stickyHeader ? 'top' : undefined}
                     className={cn(
                       // Temporary fix to prevent text bleeding in header when it is pinned
                       { 'cn-table-v2-cell-pinned': header.column.getIsPinned() },
-                      _enableColumnResizing ? 'relative' : undefined,
                       meta?.headerClassName,
                       isGroupHeaderCell && 'cn-table-v2-head-group',
                       isLeafColumn && !isGroupHeaderCell && 'cn-table-v2-head-leaf'
@@ -415,18 +657,23 @@ export const DataTable = function DataTable<TData>({
                       width: header.getSize(),
                       minWidth: column.columnDef.minSize ?? header.getSize(),
                       maxWidth: column.columnDef.maxSize ?? header.getSize(),
-                      ...getCommonPinningStyles<TData>(column)
+                      ...getStickyCellStyles<TData>({
+                        column,
+                        vertical: stickyHeader
+                          ? {
+                              edge: 'top',
+                              offset: rowIdx === 0 ? 0 : (firstHeaderRowHeight ?? 'var(--cn-table-header-row-h)')
+                            }
+                          : undefined
+                      })
                     }}
+                    resizeHandle={
+                      enableColumnResizing && isLeafColumn && column.getCanResize() ? (
+                        <ColumnResizeHandle header={header} table={table} />
+                      ) : undefined
+                    }
                   >
                     {flexRender(column.columnDef.header, header.getContext())}
-                    {_enableColumnResizing && column.getCanResize() && (
-                      <button
-                        type="button"
-                        onMouseDown={header.getResizeHandler()}
-                        className="absolute right-0 top-0 h-full w-1 cursor-col-resize"
-                        aria-label="Resize column"
-                      />
-                    )}
                   </Table.Head>
                 )
               })}
@@ -435,45 +682,104 @@ export const DataTable = function DataTable<TData>({
         })()}
       </Table.Header>
       <Table.Body>
-        {table.getRowModel().rows.map(row => (
-          <Fragment key={row.id}>
-            <Table.Row
-              className={getRowClassName?.(row)}
-              onClick={onRowClick && !getIsRowDisabled?.(row) ? () => onRowClick(row.original, row.index) : undefined}
-              to={getRowLink && !getIsRowDisabled?.(row) ? getRowLink(row.original, row.index) : undefined}
-              selected={enableRowSelection ? row.getIsSelected() : undefined}
-              disabled={getIsRowDisabled?.(row)}
-            >
-              {row.getVisibleCells().map(cell => {
-                const column = cell.column
-                return (
-                  <Table.Cell
-                    key={cell.id}
-                    // Temporary fix to prevent text bleeding in cell when it is pinned
-                    className={cn({ 'cn-table-v2-cell-pinned': column.getIsPinned() })}
-                    style={{
-                      ...getCommonPinningStyles<TData>(column),
-                      width: column.getSize(),
-                      minWidth: column.columnDef.minSize ?? column.getSize(),
-                      maxWidth: column.columnDef.maxSize ?? column.getSize()
-                    }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </Table.Cell>
-                )
-              })}
-            </Table.Row>
-            {row.getIsExpanded() && renderSubComponent && !getSubRows && (
-              <Table.Row className="bg-cn-2">
-                <Table.Cell className="bg-transparent"></Table.Cell>
-                <Table.Cell className="bg-transparent" colSpan={row.getAllCells().length - 1}>
-                  {renderSubComponent({ row })}
-                </Table.Cell>
-              </Table.Row>
-            )}
-          </Fragment>
-        ))}
+        {bodyRows.map(row => renderRow(row))}
+        {rowPinningEnabled && hasBottomRows && (
+          <tr aria-hidden="true" className="cn-table-v2-row cn-table-v2-spacer-row" ref={setSpacerRowEl}>
+            <Table.Cell
+              className="cn-table-v2-spacer-cell"
+              colSpan={table.getVisibleLeafColumns().length}
+              style={{ height: spacerHeight > 0 ? spacerHeight : undefined, padding: 0 }}
+            />
+          </tr>
+        )}
       </Table.Body>
+      {rowPinningEnabled && hasBottomRows && (
+        <Table.Footer>{bottomRows.map(row => renderRow(row, { edge: 'bottom', offset: 0 }))}</Table.Footer>
+      )}
     </Table.Root>
+  )
+}
+
+const DEFAULT_COLUMN_MIN_SIZE = 20
+
+function ColumnResizeHandle<TData>({ header, table }: { header: Header<TData, unknown>; table: TanstackTable<TData> }) {
+  const column = header.column
+  const resizeHandler = header.getResizeHandler()
+  const size = column.getSize()
+  const minSize = column.columnDef.minSize ?? DEFAULT_COLUMN_MIN_SIZE
+  const maxSize = column.columnDef.maxSize
+  const isResizing = column.getIsResizing()
+
+  const isolateAndResize = (event: MouseEvent | TouchEvent) => {
+    event.stopPropagation()
+
+    const ownerDocument = event.currentTarget.ownerDocument
+    const headerCell = event.currentTarget.closest('th')
+    const isTouch = 'touches' in event
+    const endEvent = isTouch ? 'touchend' : 'mouseup'
+
+    const suppressGeneratedClick = () => {
+      if (!headerCell) return
+
+      const suppressClick = (clickEvent: globalThis.MouseEvent) => {
+        clickEvent.preventDefault()
+        clickEvent.stopPropagation()
+        clickEvent.stopImmediatePropagation()
+      }
+
+      headerCell.addEventListener('click', suppressClick, { capture: true, once: true })
+      ownerDocument.defaultView?.setTimeout(
+        () => headerCell.removeEventListener('click', suppressClick, true),
+        isTouch ? 500 : 0
+      )
+    }
+
+    ownerDocument.addEventListener(endEvent, suppressGeneratedClick, { once: true })
+    resizeHandler(event)
+  }
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const step = event.shiftKey ? 50 : 10
+    let nextSize: number | undefined
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        nextSize = Math.max(minSize, size - step)
+        break
+      case 'ArrowRight':
+        nextSize = maxSize == null ? size + step : Math.min(maxSize, size + step)
+        break
+      default:
+        return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (nextSize === size) return
+
+    table.setColumnSizing(prev => ({
+      ...prev,
+      [column.id]: nextSize as number
+    }))
+  }
+
+  return (
+    <button
+      type="button"
+      role="slider"
+      aria-label={`Resize ${column.id} column`}
+      aria-valuenow={size}
+      aria-valuemin={minSize}
+      aria-valuemax={maxSize}
+      data-column-resizer=""
+      data-column-id={column.id}
+      data-resizing={isResizing || undefined}
+      className="cn-table-v2-column-resizer"
+      onMouseDown={isolateAndResize}
+      onTouchStart={isolateAndResize}
+      onClick={event => event.stopPropagation()}
+      onKeyDown={handleKeyDown}
+    />
   )
 }

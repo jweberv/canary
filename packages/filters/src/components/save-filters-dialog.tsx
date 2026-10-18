@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 import { Alert, Button, ButtonLayout, Dialog, FormInput, FormWrapper, Radio } from '@harnessio/ui/components'
 import { useTranslation } from '@harnessio/ui/context'
@@ -80,11 +80,11 @@ export function SaveFiltersDialog({ onSubmit }: SaveFiltersDialogProps) {
       </Dialog.Trigger>
       <Dialog.Content>
         <Dialog.Header>
-          <Dialog.Title>{t('component:filter.saveFilter', 'Save Filter')}</Dialog.Title>
+          <Dialog.Title>{t('component:filter.saveFilter', 'Save filter')}</Dialog.Title>
         </Dialog.Header>
         <Dialog.Body>
           <FormWrapper id="save-filters" {...formMethods} onSubmit={handleSubmit(onFormSubmit)}>
-            <FormInput.Text {...register('identifier')} autoFocus label="Filter Id" />
+            <FormInput.Text {...register('identifier')} autoFocus label="Filter ID" />
             <FormInput.Radio {...register('visibility')} label="Visibility">
               <Radio.Item label="Everyone" value="EveryOne" />
               <Radio.Item label="Only Me" value="OnlyCreator" />

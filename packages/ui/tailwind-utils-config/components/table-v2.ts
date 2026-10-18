@@ -22,6 +22,29 @@ export default {
       }
     },
 
+    '&-overlay-host': {
+      position: 'relative',
+      display: 'grid',
+      width: 'max-content',
+      minWidth: '100%',
+      isolation: 'isolate',
+
+      '& > .cn-table-v2-element': {
+        gridArea: '1 / 1'
+      }
+    },
+
+    '&-column-resize-indicator': {
+      gridArea: '1 / 1',
+      justifySelf: 'start',
+      alignSelf: 'start',
+      zIndex: '20',
+      width: '2px',
+      height: 'var(--cn-table-header-min)',
+      pointerEvents: 'none',
+      backgroundColor: 'var(--cn-border-brand)'
+    },
+
     // Variants
     '&:where(.cn-table-v2-normal)': {
       '@apply caption-bottom': '',
@@ -191,6 +214,62 @@ export default {
       height: '100%'
     },
 
+    '&-head-resizable': {
+      position: 'relative',
+
+      // The next header cell paints over this cell's right edge. Lift the
+      // hovered cell so its boundary affordance remains visible.
+      '&:hover': {
+        overflow: 'visible',
+        zIndex: '8 !important'
+      }
+    },
+
+    '&-column-resizer': {
+      position: 'absolute',
+      top: '0',
+      right: '0',
+      zIndex: '2',
+      width: '8px',
+      height: '100%',
+      margin: '0',
+      padding: '0',
+      border: '0',
+      appearance: 'none',
+      background: 'transparent',
+      cursor: 'col-resize',
+      userSelect: 'none',
+      touchAction: 'none',
+      outline: 'none',
+
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: '0',
+        right: '0',
+        width: '1px',
+        height: '100%',
+        backgroundColor: 'transparent'
+      },
+
+      '&:hover::after': {
+        backgroundColor: 'var(--cn-border-3)',
+        width: '2px'
+      },
+
+      '&:focus-visible::after': {
+        backgroundColor: 'var(--cn-border-brand)',
+        width: '2px'
+      },
+
+      // The table-level overlay is the only drag indicator. Suppress this
+      // in-cell line while dragging so auto-layout tables do not show both.
+      '&:where([data-resizing=true])::after': {
+        backgroundColor: 'transparent',
+        width: '1px'
+      }
+    },
+
     // Data cell
     '&-cell': {
       '--cn-table-pinned-base': 'var(--cn-bg-1)',
@@ -224,6 +303,100 @@ export default {
     // Caption
     '&-caption': {
       '@apply mt-cn-md': ''
+    }
+  },
+
+  /**
+   * Sticky mode (opt-in via `Table.Root` `stickyHeader`).
+   * Every rule is scoped to `.cn-table-v2-sticky` so non-sticky tables
+   * compile to byte-identical CSS.
+   */
+  '.cn-table-v2-sticky': {
+    // The viewport is the single scroll container; the outer container never scrolls.
+    '&.cn-table-v2-container': {
+      overflow: 'hidden'
+    },
+
+    '.cn-table-v2-viewport': {
+      overflow: 'auto'
+    },
+
+    '.cn-table-v2-element': {
+      // No intermediate scrollport between sticky cells and the viewport.
+      overflow: 'visible',
+      // In the separated-border model, borders belong to cells and travel with
+      // sticky cells — this removes the collapsed-border "transparent gap"
+      // between stacked header rows.
+      borderCollapse: 'separate',
+      borderSpacing: '0',
+      // Fallback block-size of the first header row (incl. its border);
+      // DataTable overrides it inline with the measured height.
+      '--cn-table-header-row-h': 'calc(var(--cn-table-header-min) + var(--cn-table-border))'
+    },
+
+    // Header separators move off the (non-sticky) thead / tr boxes onto the
+    // cells, one-directional (bottom only) so the separated model draws
+    // single lines.
+    '.cn-table-v2-header': {
+      borderBottom: 'none',
+
+      'tr[data-header-depth="0"]:not(:last-child)': {
+        borderBottom: 'none'
+      }
+    },
+
+    '.cn-table-v2-head': {
+      borderBottomWidth: 'var(--cn-table-border)',
+      borderBottomStyle: 'solid',
+      borderBottomColor: 'var(--cn-border-3)'
+    },
+
+    // Sortable head hover must stay opaque when sticky: composite the
+    // translucent state token over the opaque pinned-base instead of
+    // replacing the background. Transparent variant keeps its own hover.
+    '&:not(.cn-table-v2-transparent) .cn-table-v2-head-sortable:hover': {
+      '--cn-table-pinned-overlay': 'var(--cn-state-hover)',
+      background: tablePinnedLayeredBackground
+    },
+
+    // Bottom-pinned rows (tfoot): separator lives on the cells (top border),
+    // matching the one-directional border scheme of the header. Footer cells
+    // use the header's opaque base so the pinned band reads like one surface.
+    '.cn-table-v2-footer': {
+      borderTop: 'none',
+
+      '.cn-table-v2-cell': {
+        '--cn-table-pinned-base': 'var(--cn-bg-2)',
+        backgroundColor: 'var(--cn-table-pinned-base)',
+        borderTopWidth: 'var(--cn-table-border)',
+        borderTopStyle: 'solid',
+        borderTopColor: 'var(--cn-border-3)'
+      }
+    },
+
+    // Pinned-row hover/selected compositing uses the same overlay mechanism
+    // as pinned columns, so the generic body hover must not also repaint
+    // their background.
+    '&.cn-table-v2-highlight-hover tbody > tr.cn-table-v2-row-pinned:hover > td': {
+      backgroundColor: 'var(--cn-table-pinned-base)'
+    },
+
+    // Spacer row: paints the opaque gap between the body rows and a
+    // bottom-pinned row when the table is shorter than its viewport.
+    // No borders or hover — it is a phantom row.
+    '.cn-table-v2-spacer-row': {
+      borderBottom: 'none',
+
+      '> td': {
+        '--cn-table-pinned-base': 'var(--cn-bg-1)',
+        backgroundColor: 'var(--cn-table-pinned-base)',
+        borderBottom: 'none',
+        padding: '0'
+      }
+    },
+
+    '&.cn-table-v2-highlight-hover tbody > tr.cn-table-v2-spacer-row:hover > td': {
+      backgroundColor: 'var(--cn-bg-1)'
     }
   },
 

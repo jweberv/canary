@@ -101,7 +101,7 @@ export default {
       width: 'fit-content',
       padding: 'var(--cn-tabs-container)',
       borderRadius: 'var(--cn-tabs-container-radius)',
-      border: 'var(--cn-tabs-container-border) solid var(--cn-border-2)',
+      border: 'var(--cn-tabs-container-border) solid var(--cn-border-3)',
       backgroundColor: 'var(--cn-bg-2)',
       '@apply font-body-normal': ''
     },
@@ -127,9 +127,13 @@ export default {
   },
 
   '.cn-tabs-trigger': {
-    '@apply font-body-strong': '',
+    '@apply font-body-normal': '',
     display: 'flex',
     alignItems: 'center',
+    // Center the content so the width reserved for the bold (hover/active) label
+    // sits evenly on both sides. The label then grows symmetrically from its
+    // center when it bolds, instead of expanding rightward from the left edge.
+    justifyContent: 'center',
     color: 'var(--cn-text-3)',
     userSelect: 'none',
     whiteSpace: 'nowrap',
@@ -138,19 +142,32 @@ export default {
     transitionDuration: '150ms',
     transitionTimingFunction: 'ease-in-out',
 
+    // Vertical (sidebar-style) tabs stretch full width; keep their labels
+    // left-aligned rather than centered.
+    '.cn-tabs-list-vertical &': {
+      justifyContent: 'flex-start'
+    },
+
+    '&.cn-tabs-trigger-measure-strong': {
+      '@apply font-body-strong': ''
+    },
+
+    '&:where(:not([disabled]).cn-tabs-trigger-active), &:where(:not([disabled]):hover)': {
+      '@apply font-body-strong': ''
+    },
+
     '&-outlined': {
       minHeight: 'var(--cn-tabs-item-min-height)',
       padding: 'var(--cn-tabs-item-py) var(--cn-tabs-item-px)',
       gap: 'var(--cn-tabs-item-gap)',
       color: 'var(--cn-text-3)',
       border: 'var(--cn-tabs-item-border) solid transparent',
-      '@apply font-body-strong': '',
 
       '&:where(:not([disabled]).cn-tabs-trigger-active)': {
-        borderColor: 'var(--cn-border-2)',
+        borderColor: 'var(--cn-text-brand)',
         backgroundColor: 'var(--cn-bg-3)',
         borderRadius: 'var(--cn-tabs-item-radius)',
-        color: 'var(--cn-text-1)'
+        color: 'var(--cn-text-brand) !important'
       },
 
       '&:where(:not([disabled]):hover)': {
@@ -164,13 +181,12 @@ export default {
       gap: 'var(--cn-tabs-item-gap)',
       color: 'var(--cn-text-3)',
       border: 'var(--cn-tabs-item-border) solid transparent',
-      '@apply font-body-normal': '',
 
       '&:where(:not([disabled]).cn-tabs-trigger-active)': {
-        backgroundColor: 'var(--cn-set-gray-secondary-bg)',
+        backgroundColor: 'var(--cn-set-blue-secondary-bg)',
         borderRadius: 'var(--cn-tabs-item-radius)',
-        borderColor: 'var(--cn-set-gray-secondary-bg)',
-        color: 'var(--cn-set-gray-secondary-text)'
+        borderColor: 'var(--cn-set-blue-secondary-bg)',
+        color: 'var(--cn-set-blue-secondary-text) !important'
       },
 
       '&:where(:not([disabled]):hover)': {
@@ -187,13 +203,12 @@ export default {
       border: 'var(--cn-tabs-item-overlined-border) solid transparent',
       borderRadius:
         'var(--cn-tabs-item-overlined-rt) var(--cn-tabs-item-overlined-rt) var(--cn-tabs-item-overlined-rb) var(--cn-tabs-item-overlined-rb)',
-      '@apply font-body-normal': '',
 
       '&:where(:not([disabled]).cn-tabs-trigger-active)': {
         borderColor: 'var(--cn-border-3)',
         borderBottomColor: 'transparent',
         backgroundColor: 'var(--cn-bg-1)',
-        color: 'var(--cn-text-1)'
+        color: 'var(--cn-text-brand) !important'
       },
 
       '&:where(:not([disabled]):hover)': {
@@ -228,11 +243,10 @@ export default {
       gap: 'var(--cn-tabs-item-underlined-gap)',
       color: 'var(--cn-text-3)',
       borderBottom: 'var(--cn-tabs-item-underlined-border) solid transparent',
-      '@apply font-body-normal': '',
 
       '&:where(:not([disabled]).cn-tabs-trigger-active)': {
-        borderColor: 'var(--cn-border-brand)',
-        color: 'var(--cn-text-1)'
+        borderColor: 'var(--cn-text-brand)',
+        color: 'var(--cn-text-brand) !important'
       },
 
       '&:where(:not([disabled]):hover)': {
@@ -248,14 +262,14 @@ export default {
         borderRight: 'var(--cn-tabs-item-underlined-border) solid transparent',
 
         '&:where(:not([disabled]).cn-tabs-trigger-active)': {
-          borderColor: 'var(--cn-border-brand)'
+          borderColor: 'var(--cn-text-brand)'
         }
       }
     },
 
     '&:where([disabled]), &:where([aria-disabled="true"])': {
       cursor: 'not-allowed',
-      '@apply opacity-cn-disabled': ''
+      '@apply font-body-normal opacity-cn-disabled': ''
     }
   }
 }

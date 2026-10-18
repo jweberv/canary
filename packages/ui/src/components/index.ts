@@ -1,4 +1,5 @@
 export * from './alert'
+export * from './alert-item'
 export * from './icon-v2'
 export * from './logo-v2'
 export * from './button'
@@ -37,6 +38,7 @@ export * from './form-primitives'
 export * from './button-layout'
 export * from './input'
 export * from './checkbox'
+export * from './checkbox-tree'
 export * from './radio'
 export * from './calendar'
 export * from './toggle'
@@ -56,6 +58,7 @@ export * from './dialogs'
 export * from './switch'
 export * from './slider'
 export * from './meter'
+export * from './gauge'
 export * from './filters'
 export * from './more-actions-tooltip'
 export * from './split-button'
@@ -114,8 +117,27 @@ export * from './layouts'
 export * from './searchable-dropdown'
 export * from './page'
 export * from './calendar-input-view'
+export * from './date-range-v2'
 export * from './file-upload'
 export * from './input-caption'
 export * from './mention-textarea'
 export * from './stepper'
-export * from './split-pane-stepper'
+export * from './dual-pane-stepper'
+// useFlowCard is already re-exported via ./dual-pane-stepper above (same shared engine hook);
+// export only the single-pane-specific names here to avoid a duplicate-export error.
+export {
+  SinglePaneStepper,
+  type SinglePaneStepperRootProps,
+  type SinglePaneStepperCardProps
+} from './single-pane-stepper'
+export {
+  SinglePaneStepperV2,
+  type SinglePaneStepperV2RootProps,
+  type SinglePaneStepperV2CardProps
+} from './single-pane-stepper-v2'
+// The shared flow engine, for consumers that need to read live engine state (e.g. an onboarding
+// browser-draft persist bridge) outside of a card's own `useFlowCard`. `useFlowCard` is already
+// re-exported via `./dual-pane-stepper` above, so it is deliberately omitted here to avoid a
+// duplicate-export clash. `EngineContextValue`, `CardContextProvider`, and `useCardStatus` stay
+// internal to the stepper implementations.
+export { FlowEngineProvider, useEngineContext } from './flow-stepper/engine'

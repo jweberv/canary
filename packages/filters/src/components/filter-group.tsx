@@ -11,6 +11,8 @@ import {
 } from 'react'
 
 import {
+  createDateRangeV2FilterParser,
+  FilterFieldTypes,
   FilterOptionConfig,
   Layout,
   ListActions,
@@ -41,14 +43,24 @@ interface FilterGroupProps<
   multiSortConfig?: Omit<ComponentProps<typeof Sort.Root>, 'children'>
   simpleSortConfig?: ComponentProps<typeof SimpleSort>
   searchValue?: string
+  searchPlaceholder?: string
+  hideSearch?: boolean
   handleInputChange: (value: string) => void
   filterOptions: FilterOptionConfig<V, CustomValue>[]
   headerAction?: ReactNode
+  isAddFilterSearchable?: boolean
+  addFilterInputPlaceholder?: string
+  /**
+   * Hides the "Add filter" dropdown and the "Reset" control. Useful when all
+   * filters are sticky (always visible), so there is nothing to add.
+   */
+  hideAddFilter?: boolean
   savedFiltersConfig?: {
     savedFilterKey?: string
     savedFiltersOptions: { value: string; label: string }[]
     onSaveFilters: SaveFiltersDialogProps['onSubmit']
     getSavedFiltersValues: (savedFilterId: string) => Promise<T>
+    onDeleteSavedFilter?: (savedFilterId: string) => Promise<void> | void
   }
 }
 
@@ -70,11 +82,16 @@ const FilterGroupInner = <
     onFilterValueChange,
     searchValue,
     handleInputChange,
+    searchPlaceholder,
+    hideSearch,
     filterOptions,
     multiSortConfig,
     simpleSortConfig,
     savedFiltersConfig,
-    handleFilterOpen
+    handleFilterOpen,
+    isAddFilterSearchable,
+    addFilterInputPlaceholder,
+    hideAddFilter
   } = props
 
   const { t } = useTranslation()
@@ -82,7 +99,8 @@ const FilterGroupInner = <
     savedFilterKey = 'filterIdentifier',
     savedFiltersOptions,
     onSaveFilters,
-    getSavedFiltersValues
+    getSavedFiltersValues,
+    onDeleteSavedFilter
   } = savedFiltersConfig ?? {}
 
   const FilterHandler = useMemo(() => createFilters<T>(), [])
@@ -106,11 +124,6 @@ const FilterGroupInner = <
       }
     }
   })
-
-  // Create a wrapper function that matches the expected type
-  const handleSetOpenedFilter = (filter: keyof T) => {
-    setOpenedFilter(filter as V)
-  }
 
   const onSortValueChange = (sort: SortValue[]) => {
     setSortSelectionsCnt(sort.length)
@@ -149,17 +162,19 @@ const FilterGroupInner = <
           <ListActions.Root>
             <ListActions.Left className="min-w-0">
               <Layout.Horizontal gap="xs" align={'center'} justify={'start'} className="min-w-0 flex-1">
-                <SearchInput
-                  inputContainerClassName="max-w-80 flex-1"
-                  ref={searchRef}
-                  searchValue={searchValue || ''}
-                  onChange={handleInputChange}
-                  placeholder={t('views:repos.search', 'Search')}
-                />
+                {!hideSearch && (
+                  <SearchInput
+                    inputContainerClassName="max-w-80 flex-1"
+                    ref={searchRef}
+                    searchValue={searchValue || ''}
+                    onChange={handleInputChange}
+                    placeholder={searchPlaceholder ?? t('views:repos.search', 'Search')}
+                  />
+                )}
                 {props.quickFiltersSlot}
-                {filterOptions.length > 0 && (
+                {filterOptions.length > 0 && !hideAddFilter && (
                   <FilterHandler.Dropdown>
-                    {(addFilter, availableFilters, resetFilters) => {
+                    {(addFilter, availableFilters) => {
                       return (
                         <SearchableDropdown<FilterOptionConfig<V, CustomValue>>
                           options={filterOptions.filter(option => availableFilters.includes(option.value))}
@@ -167,11 +182,14 @@ const FilterGroupInner = <
                             addFilter(option.value)
                             setOpenedFilter(option.value)
                           }}
-                          onReset={() => resetFilters()}
-                          inputPlaceholder={t('component:filter.inputPlaceholder', 'Filter by...')}
-                          buttonLabel={t('component:filter.buttonLabel', 'Reset filters')}
+                          isSearchable={isAddFilterSearchable}
+                          inputPlaceholder={
+                            addFilterInputPlaceholder ?? t('component:filter.inputPlaceholder', 'Filter by...')
+                          }
                           displayLabel={renderFilterSelectLabel({
-                            selectedFilters: filterOptions.length - availableFilters.length,
+                            selectedFilters: filterOptions.filter(
+                              option => !option.sticky && !availableFilters.includes(option.value)
+                            ).length,
                             displayLabel: t('component:filter.defaultLabel', 'Add filter')
                           })}
                         />
@@ -180,7 +198,11 @@ const FilterGroupInner = <
                   </FilterHandler.Dropdown>
                 )}
                 {!!savedFiltersOptions?.length && (
-                  <SavedFilters savedFilterKey={savedFilterKey} options={savedFiltersOptions} />
+                  <SavedFilters
+                    savedFilterKey={savedFilterKey}
+                    options={savedFiltersOptions}
+                    onDeleteSavedFilter={onDeleteSavedFilter}
+                  />
                 )}
               </Layout.Horizontal>
             </ListActions.Left>
@@ -199,12 +221,22 @@ const FilterGroupInner = <
           </ListActions.Root>
           <>
             <ListControlBar<T, CustomValue, T[keyof T]>
+              hideAddFilter={hideAddFilter}
               renderSelectedFilters={filterFieldRenderer => (
                 <FilterHandler.Content className={'gap-x-cn-md flex items-center'}>
                   {filterOptions.map(filterOption => {
                     return (
                       <FilterHandler.Component<keyof T>
-                        parser={filterOption.parser as any}
+                        parser={
+                          (filterOption.type === FilterFieldTypes.DateRangeV2
+                            ? // A custom parser replaces the built-in query for every mode.
+                              (filterOption.parser ??
+                              createDateRangeV2FilterParser(
+                                filterOption.filterFieldConfig?.presets,
+                                filterOption.filterFieldConfig?.calendarProps?.weekStartsOn
+                              ))
+                            : filterOption.parser) as any
+                        }
                         filterKey={filterOption.value}
                         sticky={filterOption.sticky}
                         defaultValue={filterOption.defaultValue as T[keyof T]}
@@ -239,7 +271,6 @@ const FilterGroupInner = <
               sortSelectionsCnt={sortSelectionsCnt}
               renderSelectedSort={() => <Sort.MultiSort />}
               openedFilter={openedFilter}
-              setOpenedFilter={handleSetOpenedFilter}
               filterOptions={filterOptions}
               selectedFiltersCnt={selectedFiltersCnt}
             />

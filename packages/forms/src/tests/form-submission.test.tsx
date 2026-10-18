@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 import '@testing-library/jest-dom'
 
@@ -194,6 +194,38 @@ describe('Form Submission Integration Tests', () => {
       )
 
       // Try to submit without filling required fields
+      await userEvent.click(screen.getByTestId('submit-button'))
+
+      await waitFor(() => {
+        expect(mockOnSubmit).not.toHaveBeenCalled()
+        expect(mockOnValidationChange).toHaveBeenCalledWith({
+          isValid: false,
+          isSubmitted: true
+        })
+      })
+    })
+
+    it('should prevent submission when a required field sits under a missing parent object', async () => {
+      const formDefinition: IFormDefinition = {
+        inputs: [
+          {
+            inputType: 'text',
+            path: 'spec.connectorRef',
+            label: 'Connector',
+            required: true
+          }
+        ]
+      }
+
+      render(
+        <TestFormComponent
+          formDefinition={formDefinition}
+          onSubmit={mockOnSubmit}
+          onValidationChange={mockOnValidationChange}
+          mode="onSubmit"
+        />
+      )
+
       await userEvent.click(screen.getByTestId('submit-button'))
 
       await waitFor(() => {

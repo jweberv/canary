@@ -92,6 +92,16 @@ describe('HeaderV2', () => {
     expect(screen.getByText('Tab 2')).toBeInTheDocument()
   })
 
+  test('renders tab badge when provided', () => {
+    render(
+      <HeaderV2
+        title="Test Page"
+        tabs={[{ label: 'Tab 1', value: 'tab1', badge: { variant: 'primary', theme: 'info', content: 'New' } }]}
+      />
+    )
+    expect(screen.getByText('New')).toBeInTheDocument()
+  })
+
   test('does not render tabs when not provided', () => {
     render(<HeaderV2 title="Test Page" />)
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
@@ -123,6 +133,13 @@ describe('HeaderV2', () => {
   test('Page.HeaderV2 is exported and renders', () => {
     render(<Page.HeaderV2 title="Namespace Test" />)
     expect(screen.getByRole('heading', { level: 1, name: 'Namespace Test' })).toBeInTheDocument()
+  })
+
+  test('truncates string titles and exposes the full value via native title tooltip', () => {
+    render(<HeaderV2 title="A very long pipeline name that should truncate in the header" />)
+    const heading = screen.getByRole('heading', { level: 1 })
+    expect(heading).toHaveClass('truncate')
+    expect(heading).toHaveAttribute('title', 'A very long pipeline name that should truncate in the header')
   })
 
   test('renders all sections together (integration)', () => {

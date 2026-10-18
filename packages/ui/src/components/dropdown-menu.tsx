@@ -121,6 +121,9 @@ const DropdownMenuContent = forwardRef<ElementRef<typeof DropdownMenuPrimitive.C
       propOnKeyDownCapture?.(e)
       if (e.defaultPrevented || e.isDefaultPrevented?.()) return
 
+      // Capture-phase stopPropagation would also block the input's own Enter handlers (e.g. MultiSelect).
+      if (isTargetInput && e.key === 'Enter') return
+
       if ((isTargetInput && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') || e.key === 'Tab') {
         e.stopPropagation()
         return
@@ -232,9 +235,9 @@ const DropdownBaseItem = ({
 
     {tag && <Tag {...tag} />}
 
-    <div className="ml-auto">
-      {label && <Text variant="caption-light">{label}</Text>}
-      {shortcut && <Text variant="caption-light">{shortcut}</Text>}
+    <div className="ml-auto flex shrink-0 items-center gap-x-cn-2xs">
+      {label && (typeof label === 'string' ? <Text variant="caption-normal">{label}</Text> : label)}
+      {shortcut && <Text variant="caption-normal">{shortcut}</Text>}
       {checkmark && <IconV2 name="check" />}
       {withSubIndicator && <IconV2 name="nav-arrow-right" size="xs" />}
     </div>
