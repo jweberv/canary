@@ -37,7 +37,7 @@ export function useEngineContext(): EngineContextValue {
   const ctx = useContext(EngineContext)
   if (!ctx)
     throw new Error(
-      'useEngineContext must be used within a flow stepper Root (DualPaneStepper.Root or SinglePaneStepper.Root)'
+      'useEngineContext must be used within a flow stepper Root (DualPaneStepper.Root, SinglePaneStepper.Root, or SinglePaneStepperV2.Root)'
     )
   return ctx
 }
@@ -67,7 +67,7 @@ export function useCardStatus(): CardContextValue {
   const ctx = useContext(CardContext)
   if (!ctx)
     throw new Error(
-      'useCardStatus must be used within a card rendered by a flow stepper (DualPaneStepper or SinglePaneStepper)'
+      'useCardStatus must be used within a card rendered by a flow stepper (DualPaneStepper, SinglePaneStepper, or SinglePaneStepperV2)'
     )
   return ctx
 }
@@ -280,11 +280,20 @@ export function FlowEngineProvider({
       const resolvedNext = resolveNextStep(stepId, nextStepId, 'complete')
       const currentState = stateRef.current
       const newState = statePatch ? { ...currentState, ...statePatch } : currentState
+      const answer = typeof statePatch?.answer === 'string' ? statePatch.answer : undefined
       if (statePatch) setState(newState)
 
       setCardHistory(prev => {
         const updated = prev.map(entry =>
-          entry.stepId === stepId ? { ...entry, status: 'completed' as const, stateSnapshot: newState } : entry
+          entry.stepId === stepId
+            ? {
+                ...entry,
+                status: 'completed' as const,
+                stateSnapshot: newState,
+                ...(answer ? { answer } : {}),
+                completedAt: Date.now()
+              }
+            : entry
         )
         if (resolvedNext && !updated.find(e => e.stepId === resolvedNext)) {
           // Terminal only blocks re-entry (added to terminalRef below); it no longer forces

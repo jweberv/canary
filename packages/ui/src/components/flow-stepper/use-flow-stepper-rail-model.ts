@@ -116,6 +116,7 @@ export function useFlowStepperRailModel(options?: { rewindCompletedClicks?: bool
 
   return {
     totalOverride,
+    totalStepsCount,
     stepNumberOverrides,
     stepNumberOverridesComplete: pathWalkComplete,
     handleStepperClick

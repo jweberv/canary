@@ -81,6 +81,10 @@ export interface CardEntry {
   // Incremented on confirmReactivation so card stacks can remount local state.
   // Optional so derive-stepper-model fixtures stay untouched; missing is treated as 0.
   mountGeneration?: number
+  /** Human-readable selection for SinglePaneStepperV2 chat messages. Optional for existing consumers. */
+  answer?: string
+  /** Epoch ms when complete() last succeeded. Used for chat-message timestamps. */
+  completedAt?: number
 }
 
 /**

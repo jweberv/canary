@@ -403,6 +403,7 @@ export default defineConfig({
               attrs: { "data-icon": "light-bulb-on" },
             },
             "growth-patterns/single-pane-stepper",
+            "growth-patterns/single-pane-stepper-v2",
             {
               slug: "growth-patterns/dual-pane-stepper",
               label: "Dual Pane Stepper",
