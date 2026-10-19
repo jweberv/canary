@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { Tag } from '@components/tag'
 import { Text } from '@components/text'
 import { cn } from '@utils/cn'
 
@@ -62,9 +63,13 @@ export function SinglePaneStepperV2Card({
             {title}
           </Text>
           {showStepBadge && stepNumber > 0 && totalSteps > 0 ? (
-            <span className="cn-single-pane-stepper-v2-step-badge">
-              Step {stepNumber}/{totalSteps}
-            </span>
+            <Tag
+              className="cn-single-pane-stepper-v2-step-badge"
+              size="sm"
+              variant="outline"
+              theme={status === 'active' ? 'blue' : 'gray'}
+              value={`Step ${stepNumber}/${totalSteps}`}
+            />
           ) : null}
         </div>
         {description ? (

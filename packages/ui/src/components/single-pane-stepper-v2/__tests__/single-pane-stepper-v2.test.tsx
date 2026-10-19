@@ -96,7 +96,8 @@ describe('SinglePaneStepperV2', () => {
     expect(
       screen.getByText('In a sentence or two, describe what functionality you want your first feature flag to control.')
     ).toBeInTheDocument()
-    expect(screen.getByText('Step 1/3')).toBeInTheDocument()
+    const stepBadge = screen.getByText('Step 1/3').closest('.cn-tag')
+    expect(stepBadge).toHaveClass('cn-tag-blue', 'cn-tag-outline', 'cn-tag-sm')
     expect(screen.getByText('Create a feature flag')).toBeInTheDocument()
     expect(screen.getByText('Continue')).toBeInTheDocument()
   })
@@ -115,6 +116,8 @@ describe('SinglePaneStepperV2', () => {
     expect(screen.queryByText('Continue')).not.toBeInTheDocument()
     expect(screen.getByText('What do you want your first flag to do?')).toBeInTheDocument()
     expect(screen.getByText('Who should see the new experience?')).toBeInTheDocument()
+    expect(screen.getByText('Step 1/3').closest('.cn-tag')).toHaveClass('cn-tag-gray')
+    expect(screen.getByText('Step 2/3').closest('.cn-tag')).toHaveClass('cn-tag-blue')
     expect(screen.getByRole('button', { name: 'Edit this answer' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', {

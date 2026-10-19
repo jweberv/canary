@@ -177,27 +177,11 @@ export default {
     flex: '0 1 auto'
   },
 
-  // Same chip as `.cn-stepper-step-badge`: gray outline at rest, blue outline on the active step.
+  // Layout only. Tag owns the colors: blue outline on the active step, gray otherwise.
   '.cn-single-pane-stepper-v2-step-badge': {
-    display: 'inline-flex',
-    alignItems: 'center',
     flexShrink: '0',
     whiteSpace: 'nowrap',
-    marginTop: 'var(--cn-spacing-half)',
-    padding: 'var(--cn-spacing-half) var(--cn-spacing-2)',
-    borderRadius: 'var(--cn-rounded-2)',
-    border: 'var(--cn-spacing-px) solid var(--cn-border-2)',
-    background: 'var(--cn-bg-2)',
-    color: 'var(--cn-text-3)',
-    fontSize: '11px',
-    fontWeight: 'var(--cn-font-weight-default-normal-600)',
-    lineHeight: '1.35'
-  },
-
-  '.cn-single-pane-stepper-v2-card-active .cn-single-pane-stepper-v2-step-badge': {
-    borderColor: 'var(--cn-set-blue-outline-border)',
-    background: 'var(--cn-set-blue-outline-bg)',
-    color: 'var(--cn-set-blue-outline-text)'
+    marginTop: 'var(--cn-spacing-half)'
   },
 
   '.cn-single-pane-stepper-v2-card-description': {
