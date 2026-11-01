@@ -994,7 +994,7 @@ The rail and the main pane each have their own scroll area, so users keep contex
 
 Use `Drawer.Rail` for the left pane. It provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and accepts arbitrary children, so you can drop in a definition list, file tree, navigation menu, or any other content.
 
-For multi-step flows, put a [`Stepper`](/components/navigation/stepper) inside `Drawer.Rail` and render the active step content in `Drawer.DualPaneMain`. Control the active step with `Stepper.Root`'s `value` and `onValueChange`. Sub-flows use `Stepper.SubStep` the same way they do outside a drawer.
+For multi-step flows, put a [Stepper](/components/navigation/stepper) inside `Drawer.Rail` and render the active step content in `Drawer.DualPaneMain`. Control the active step with the `value` and `onValueChange` props on `Stepper.Root`. Sub-flows use `Stepper.SubStep` the same way they do outside a drawer.
 
 Use `size="md"`, `size="lg"`, or `size="xl"` on `Drawer.Content` so the rail and the main pane both have room. The panes never stack — the right pane stays beside the rail and shrinks with the viewport down to the `xs` drawer width as a [minimum](#sizes); past that point the dual pane scrolls horizontally. This applies at every `size` (including the fixed sizes), because `Drawer.Content` is also capped at the viewport's width.
 
@@ -1568,8 +1568,7 @@ Dual-pane row layout wrapper.
   props={[
     {
       name: "children",
-      description:
-        "A Drawer.Rail plus a Drawer.DualPaneMain.",
+      description: "A Drawer.Rail plus a Drawer.DualPaneMain.",
       required: true,
       value: "ReactNode",
     },
@@ -1585,7 +1584,7 @@ Dual-pane row layout wrapper.
 
 ### `Rail`
 
-Generic left rail for a dual pane drawer. Provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and renders arbitrary children. Use this for reference content like a glossary, definition list, file tree, related-records list, or browse view. For numbered multi-step flows, put a [`Stepper`](/components/navigation/stepper) inside the rail.
+Generic left rail for a dual pane drawer. Provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and renders arbitrary children. Use this for reference content like a glossary, definition list, file tree, related-records list, or browse view. For numbered multi-step flows, put a [Stepper](/components/navigation/stepper) inside the rail.
 
 Renders an `<aside>` element so screen readers expose it as a complementary region; pair it with `aria-label` to give that region a name.
 
