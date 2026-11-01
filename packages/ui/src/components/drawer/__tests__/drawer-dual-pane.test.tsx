@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { vi } from 'vitest'
 
 import { Drawer } from '../index'
@@ -121,16 +121,17 @@ vi.mock('@/components', async () => {
   }
 })
 
-const renderDualPane = (currentStep: string, onValueChange = vi.fn(), { title }: { title?: React.ReactNode } = {}) =>
+const renderDualPane = ({ title }: { title?: React.ReactNode } = {}) =>
   render(
     <Drawer.Root open>
       <Drawer.Content>
         <Drawer.DualPane>
-          <Drawer.Steps value={currentStep} onValueChange={onValueChange} title={title}>
-            <Drawer.Step value="details" title="Details" description="Basic information" />
-            <Drawer.Step value="configuration" title="Configuration" />
-            <Drawer.Step value="review" title="Review" description="Confirm before submitting" />
-          </Drawer.Steps>
+          <Drawer.Rail aria-label="Glossary" title={title}>
+            <dl>
+              <dt>API</dt>
+              <dd>Application Programming Interface</dd>
+            </dl>
+          </Drawer.Rail>
           <Drawer.DualPaneMain>
             <Drawer.Header>
               <Drawer.Title>Main pane title</Drawer.Title>
@@ -146,90 +147,14 @@ const renderDualPane = (currentStep: string, onValueChange = vi.fn(), { title }:
 
 describe('Drawer dual pane layout', () => {
   test('renders dual-pane structure with independent scroll areas', async () => {
-    renderDualPane('details')
+    renderDualPane()
 
-    expect(screen.getByRole('navigation', { name: 'Drawer steps' })).toBeInTheDocument()
+    expect(screen.getByRole('complementary', { name: 'Glossary' })).toBeInTheDocument()
     expect(screen.getByText('Main pane title')).toBeInTheDocument()
     expect(screen.getByText('Main pane content')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(screen.getAllByTestId('scroll-area')).toHaveLength(2)
-    })
-  })
-
-  test('derives active, completed, and upcoming step states', async () => {
-    renderDualPane('configuration')
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Details Basic information/ })).toHaveClass(
-        'cn-drawer-dual-pane-step-completed'
-      )
-      expect(screen.getByRole('button', { name: 'Configuration' })).toHaveClass('cn-drawer-dual-pane-step-active')
-      expect(screen.getByText('Review').closest('.cn-drawer-dual-pane-step')).toHaveClass(
-        'cn-drawer-dual-pane-step-upcoming'
-      )
-    })
-  })
-
-  test('sets aria-current on the active step', async () => {
-    renderDualPane('configuration')
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Configuration' })).toHaveAttribute('aria-current', 'step')
-    })
-  })
-
-  test('renders optional descriptions only when provided', async () => {
-    renderDualPane('details')
-
-    await waitFor(() => {
-      expect(screen.getByText('Basic information')).toBeInTheDocument()
-      expect(
-        screen
-          .getByText('Configuration')
-          .closest('.cn-drawer-dual-pane-step')
-          ?.querySelector('.cn-drawer-dual-pane-step-description')
-      ).toBeNull()
-      expect(screen.getByText('Confirm before submitting')).toBeInTheDocument()
-    })
-  })
-
-  test('fires onValueChange for completed steps and blocks upcoming steps', async () => {
-    const onValueChange = vi.fn()
-    renderDualPane('configuration', onValueChange)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Details Basic information/ })).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /Details Basic information/ }))
-    expect(onValueChange).toHaveBeenCalledWith('details')
-
-    fireEvent.click(screen.getByText('Review'))
-    expect(onValueChange).toHaveBeenCalledTimes(1)
-  })
-
-  test('renders an optional title above the step list', async () => {
-    renderDualPane('details', vi.fn(), { title: 'Create new workspace' })
-
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Create new workspace' })).toBeInTheDocument()
-    })
-  })
-
-  test('renders a numbered indicator for upcoming and active steps and a check for completed steps', async () => {
-    renderDualPane('configuration')
-
-    await waitFor(() => {
-      const completedStep = screen.getByRole('button', { name: /Details Basic information/ })
-      const activeStep = screen.getByRole('button', { name: 'Configuration' })
-      const upcomingStep = screen.getByText('Review').closest('.cn-drawer-dual-pane-step') as HTMLElement
-
-      expect(completedStep.querySelector('.cn-drawer-dual-pane-step-indicator-icon')).not.toBeNull()
-      expect(completedStep.querySelector('.cn-drawer-dual-pane-step-indicator-number')).toBeNull()
-
-      expect(activeStep.querySelector('.cn-drawer-dual-pane-step-indicator-number')?.textContent).toBe('2')
-      expect(upcomingStep.querySelector('.cn-drawer-dual-pane-step-indicator-number')?.textContent).toBe('3')
     })
   })
 })
@@ -287,311 +212,15 @@ describe('Drawer.Rail (generic rail)', () => {
   })
 })
 
-describe('Drawer.SubStep', () => {
-  const renderWithSubsteps = (currentStep: string, onValueChange = vi.fn()) =>
-    render(
-      <Drawer.Root open>
-        <Drawer.Content>
-          <Drawer.DualPane>
-            <Drawer.Steps value={currentStep} onValueChange={onValueChange} title="Create new workspace">
-              <Drawer.Step value="step1" title="Step 1" description="Description" />
-              <Drawer.Step value="step2" title="Step 2" description="Description">
-                <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                <Drawer.SubStep value="step2.3" title="Step 2.3" />
-              </Drawer.Step>
-              <Drawer.Step value="step3" title="Step 3" description="Description" />
-            </Drawer.Steps>
-            <Drawer.DualPaneMain>
-              <Drawer.Body>
-                <p>Main pane</p>
-              </Drawer.Body>
-            </Drawer.DualPaneMain>
-          </Drawer.DualPane>
-        </Drawer.Content>
-      </Drawer.Root>
-    )
-
-  test('collapses the substep list when the parent step is not active', async () => {
-    renderWithSubsteps('step1')
-
-    await waitFor(() => {
-      const list = screen.getByText('Step 2.1').closest('.cn-drawer-dual-pane-substeps-list') as HTMLElement
-      expect(list).toHaveAttribute('data-state', 'collapsed')
-    })
-  })
-
-  test('expands the substep list when the parent step is active', async () => {
-    renderWithSubsteps('step2')
-
-    await waitFor(() => {
-      const list = screen.getByText('Step 2.1').closest('.cn-drawer-dual-pane-substeps-list') as HTMLElement
-      expect(list).toHaveAttribute('data-state', 'expanded')
-    })
-  })
-
-  test('renders substeps once the parent step becomes active and starts them as upcoming', async () => {
-    renderWithSubsteps('step2')
-
-    await waitFor(() => {
-      expect(screen.getByText('Step 2.1').closest('.cn-drawer-dual-pane-substep')).toHaveClass(
-        'cn-drawer-dual-pane-substep-upcoming'
-      )
-      expect(screen.getByText('Step 2.2').closest('.cn-drawer-dual-pane-substep')).toHaveClass(
-        'cn-drawer-dual-pane-substep-upcoming'
-      )
-      expect(screen.getByText('Step 2.3').closest('.cn-drawer-dual-pane-substep')).toHaveClass(
-        'cn-drawer-dual-pane-substep-upcoming'
-      )
-    })
-  })
-
-  test('derives substep states (completed / active / upcoming) from the active substep value', async () => {
-    renderWithSubsteps('step2.2')
-
-    await waitFor(() => {
-      const completed = screen.getByText('Step 2.1').closest('.cn-drawer-dual-pane-substep') as HTMLElement
-      const active = screen.getByText('Step 2.2').closest('.cn-drawer-dual-pane-substep') as HTMLElement
-      const upcoming = screen.getByText('Step 2.3').closest('.cn-drawer-dual-pane-substep') as HTMLElement
-
-      expect(completed).toHaveClass('cn-drawer-dual-pane-substep-completed')
-      expect(active).toHaveClass('cn-drawer-dual-pane-substep-active')
-      expect(upcoming).toHaveClass('cn-drawer-dual-pane-substep-upcoming')
-
-      expect(completed.querySelector('.cn-drawer-dual-pane-substep-indicator-icon')).not.toBeNull()
-      expect(active.querySelector('.cn-drawer-dual-pane-substep-indicator-dot')).not.toBeNull()
-      expect(upcoming.querySelector('.cn-drawer-dual-pane-substep-indicator-icon')).not.toBeNull()
-    })
-  })
-
-  test('treats the parent step as active and keeps later top-level steps upcoming when a substep is active', async () => {
-    renderWithSubsteps('step2.2')
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 2 Description/ })).toHaveClass('cn-drawer-dual-pane-step-active')
-      expect(screen.getByText('Step 3').closest('.cn-drawer-dual-pane-step')).toHaveClass(
-        'cn-drawer-dual-pane-step-upcoming'
-      )
-      expect(screen.getByRole('button', { name: /Step 1 Description/ })).toHaveClass(
-        'cn-drawer-dual-pane-step-completed'
-      )
-    })
-  })
-
-  test('only sets aria-current on the actually selected substep, not on the parent step', async () => {
-    renderWithSubsteps('step2.2')
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Step 2.2' })).toHaveAttribute('aria-current', 'step')
-      expect(screen.getByRole('button', { name: /Step 2 Description/ })).not.toHaveAttribute('aria-current')
-    })
-  })
-
-  test('completed and active substeps are buttons; upcoming substeps are not navigable', async () => {
-    renderWithSubsteps('step2.2')
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Step 2.1' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Step 2.2' })).toBeInTheDocument()
-      expect(screen.queryByRole('button', { name: 'Step 2.3' })).not.toBeInTheDocument()
-
-      const upcoming = screen.getByText('Step 2.3').closest('.cn-drawer-dual-pane-substep') as HTMLElement
-      expect(upcoming).toHaveAttribute('aria-disabled', 'true')
-    })
-  })
-
-  test('clicking a navigable substep calls onValueChange with the substep value', async () => {
-    const onValueChange = vi.fn()
-    renderWithSubsteps('step2.2', onValueChange)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Step 2.1' })).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: 'Step 2.1' }))
-
-    expect(onValueChange).toHaveBeenCalledWith('step2.1')
-  })
-
-  test('clicking an upcoming/never-visited substep does not call onValueChange', async () => {
-    const onValueChange = vi.fn()
-    renderWithSubsteps('step2.2', onValueChange)
-
-    await waitFor(() => {
-      expect(screen.getByText('Step 2.3').closest('.cn-drawer-dual-pane-substep')).toBeInTheDocument()
-    })
-
-    const upcoming = screen.getByText('Step 2.3').closest('.cn-drawer-dual-pane-substep') as HTMLElement
-    fireEvent.click(upcoming)
-
-    expect(onValueChange).not.toHaveBeenCalled()
-  })
-
-  test('clicking a previous top-level step from inside a substep navigates to that step', async () => {
-    const onValueChange = vi.fn()
-    renderWithSubsteps('step2.2', onValueChange)
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 1 Description/ })).toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /Step 1 Description/ }))
-
-    expect(onValueChange).toHaveBeenCalledWith('step1')
-  })
-
-  test('a top-level step that was previously visited stays navigable as completed even after the user moves backwards past it', async () => {
-    const onValueChange = vi.fn()
-    const renderControlled = (currentStep: string) =>
-      render(
-        <Drawer.Root open>
-          <Drawer.Content>
-            <Drawer.DualPane>
-              <Drawer.Steps value={currentStep} onValueChange={onValueChange} title="Create new workspace">
-                <Drawer.Step value="step1" title="Step 1" description="Description" />
-                <Drawer.Step value="step2" title="Step 2" description="Description">
-                  <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                  <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                  <Drawer.SubStep value="step2.3" title="Step 2.3" />
-                </Drawer.Step>
-                <Drawer.Step value="step3" title="Step 3" description="Description" />
-              </Drawer.Steps>
-              <Drawer.DualPaneMain>
-                <Drawer.Body>main</Drawer.Body>
-              </Drawer.DualPaneMain>
-            </Drawer.DualPane>
-          </Drawer.Content>
-        </Drawer.Root>
-      )
-
-    const { rerender } = renderControlled('step1')
-
-    // Walk forward to step3 to mark it as visited.
-    rerender(
-      <Drawer.Root open>
-        <Drawer.Content>
-          <Drawer.DualPane>
-            <Drawer.Steps value="step3" onValueChange={onValueChange} title="Create new workspace">
-              <Drawer.Step value="step1" title="Step 1" description="Description" />
-              <Drawer.Step value="step2" title="Step 2" description="Description">
-                <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                <Drawer.SubStep value="step2.3" title="Step 2.3" />
-              </Drawer.Step>
-              <Drawer.Step value="step3" title="Step 3" description="Description" />
-            </Drawer.Steps>
-            <Drawer.DualPaneMain>
-              <Drawer.Body>main</Drawer.Body>
-            </Drawer.DualPaneMain>
-          </Drawer.DualPane>
-        </Drawer.Content>
-      </Drawer.Root>
-    )
-
-    // Then walk back to a substep of step2.
-    rerender(
-      <Drawer.Root open>
-        <Drawer.Content>
-          <Drawer.DualPane>
-            <Drawer.Steps value="step2.2" onValueChange={onValueChange} title="Create new workspace">
-              <Drawer.Step value="step1" title="Step 1" description="Description" />
-              <Drawer.Step value="step2" title="Step 2" description="Description">
-                <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                <Drawer.SubStep value="step2.3" title="Step 2.3" />
-              </Drawer.Step>
-              <Drawer.Step value="step3" title="Step 3" description="Description" />
-            </Drawer.Steps>
-            <Drawer.DualPaneMain>
-              <Drawer.Body>main</Drawer.Body>
-            </Drawer.DualPaneMain>
-          </Drawer.DualPane>
-        </Drawer.Content>
-      </Drawer.Root>
-    )
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Step 3 Description/ })).toHaveClass(
-        'cn-drawer-dual-pane-step-completed'
-      )
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: /Step 3 Description/ }))
-
-    expect(onValueChange).toHaveBeenCalledWith('step3')
-  })
-
-  test('a substep that was previously visited stays navigable as completed even after the user moves to an earlier substep', async () => {
-    const onValueChange = vi.fn()
-    const tree = (currentStep: string) => (
-      <Drawer.Root open>
-        <Drawer.Content>
-          <Drawer.DualPane>
-            <Drawer.Steps value={currentStep} onValueChange={onValueChange} title="Create new workspace">
-              <Drawer.Step value="step1" title="Step 1" description="Description" />
-              <Drawer.Step value="step2" title="Step 2" description="Description">
-                <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                <Drawer.SubStep value="step2.3" title="Step 2.3" />
-              </Drawer.Step>
-              <Drawer.Step value="step3" title="Step 3" description="Description" />
-            </Drawer.Steps>
-            <Drawer.DualPaneMain>
-              <Drawer.Body>main</Drawer.Body>
-            </Drawer.DualPaneMain>
-          </Drawer.DualPane>
-        </Drawer.Content>
-      </Drawer.Root>
-    )
-
-    const { rerender } = render(tree('step2.1'))
-
-    // Walk forward to the last substep, then back to the first.
-    rerender(tree('step2.3'))
-    rerender(tree('step2.1'))
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Step 2.3' })).toHaveClass('cn-drawer-dual-pane-substep-completed')
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: 'Step 2.3' }))
-
-    expect(onValueChange).toHaveBeenCalledWith('step2.3')
-  })
-
-  test('throws when Drawer.SubStep is rendered outside a Drawer.Step', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-    expect(() =>
-      render(
-        <Drawer.Root open>
-          <Drawer.Content>
-            <Drawer.DualPane>
-              <Drawer.Steps value="step1">
-                <Drawer.SubStep value="orphan" title="Orphan substep" />
-              </Drawer.Steps>
-              <Drawer.DualPaneMain>
-                <Drawer.Body>main</Drawer.Body>
-              </Drawer.DualPaneMain>
-            </Drawer.DualPane>
-          </Drawer.Content>
-        </Drawer.Root>
-      )
-    ).toThrow(/Drawer\.SubStep must be used inside a Drawer\.Step/)
-
-    consoleError.mockRestore()
-  })
-})
-
 describe('Nested drawers inside a dual pane drawer', () => {
   test('a Drawer.Root inside Drawer.DualPaneMain renders as a nested root', () => {
     render(
       <Drawer.Root open>
         <Drawer.Content>
           <Drawer.DualPane>
-            <Drawer.Steps value="details" aria-label="Pipeline steps">
-              <Drawer.Step value="details" title="Details" />
-            </Drawer.Steps>
+            <Drawer.Rail aria-label="Pipeline steps">
+              <p>Steps</p>
+            </Drawer.Rail>
             <Drawer.DualPaneMain>
               <Drawer.Body>
                 <Drawer.Root open>
@@ -643,9 +272,9 @@ describe('Nested drawers inside a dual pane drawer', () => {
       <Drawer.Root open>
         <Drawer.Content>
           <Drawer.DualPane>
-            <Drawer.Steps value="details" aria-label="Pipeline steps">
-              <Drawer.Step value="details" title="Details" />
-            </Drawer.Steps>
+            <Drawer.Rail aria-label="Pipeline steps">
+              <p>Steps</p>
+            </Drawer.Rail>
             <Drawer.DualPaneMain>
               <Drawer.Body>
                 <Drawer.Root open>
