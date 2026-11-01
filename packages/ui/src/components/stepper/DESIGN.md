@@ -582,11 +582,11 @@ All other visual requirements are covered by existing design tokens and componen
 
 1. Build the standalone stepper at `packages/ui/src/components/stepper/`
 2. Export from `packages/ui` public API
-3. Update the `Drawer.DualPane` to use the new stepper internally (or let consumers compose it)
+3. Compose `Stepper` inside `Drawer.Rail` for dual-pane drawer wizards
 4. Remove `DrawerSteps`, `DrawerStep`, `DrawerSubStep`, and `drawer-dual-pane-context.tsx`
 5. Remove associated CSS classes (`cn-drawer-dual-pane-step-*`, `cn-drawer-dual-pane-substep-*`)
 
-Since there are no current consumers of the drawer stepper, this is a clean replacement with no migration needed.
+These steps are complete. Dual-pane drawers no longer ship a built-in stepper; consumers compose the standalone `Stepper` in `Drawer.Rail`.
 
 ## Accessibility
 

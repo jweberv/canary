@@ -6,7 +6,7 @@ beta: true
 
 The `Drawer` component provides a way to display content in a panel that slides in from the edge of the screen. Supports multiple configuration options, including direction (left, right, top, bottom), size constraints, and nested drawers for building complex, multi-level interfaces.
 
-It is composed of several subcomponents such as `Drawer.Root`, `Drawer.Trigger`, `Drawer.Content`, `Drawer.Header`, `Drawer.HeaderV2`, `Drawer.Tagline`, `Drawer.Title`, `Drawer.Description`, `Drawer.Body`, `Drawer.Footer`, `Drawer.DualPane`, `Drawer.Rail`, `Drawer.Steps`, `Drawer.Step`, `Drawer.SubStep`, `Drawer.DualPaneMain` and `Drawer.Close` to offer a structured and customizable interface.
+It is composed of several subcomponents such as `Drawer.Root`, `Drawer.Trigger`, `Drawer.Content`, `Drawer.Header`, `Drawer.HeaderV2`, `Drawer.Tagline`, `Drawer.Title`, `Drawer.Description`, `Drawer.Body`, `Drawer.Footer`, `Drawer.DualPane`, `Drawer.Rail`, `Drawer.DualPaneMain` and `Drawer.Close` to offer a structured and customizable interface.
 
 import { DocsPage } from "@/components/docs-page";
 
@@ -992,11 +992,9 @@ The dual pane drawer renders a fixed left rail beside a scrollable main pane. Us
 
 The rail and the main pane each have their own scroll area, so users keep context on one side while moving through the other.
 
-For non-stepped content (reference, browse, anything where the rail isn't a wizard), use `Drawer.Rail`. It provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and accepts arbitrary children, so you can drop in a definition list, file tree, navigation menu, or any other content.
+Use `Drawer.Rail` for the left pane. It provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and accepts arbitrary children, so you can drop in a definition list, file tree, navigation menu, or any other content.
 
-For multi-step flows, compose the rail with `Drawer.Steps` and `Drawer.Step` — a numbered list with active / completed / upcoming states. Each step renders an indicator circle (check mark for completed, number for active or upcoming) plus a title and optional description. Put the active step content in `Drawer.DualPaneMain` with a separate scrollable `Drawer.Body`. Control the active step with `Drawer.Steps`' `value` and `onValueChange`. Any step the user has previously visited stays clickable — including steps ahead of the current one if they've already been reached — so the user can jump back and forth freely. Only steps the user has never visited are read-only.
-
-For sub-flows inside a step, nest `Drawer.SubStep` children inside a `Drawer.Step`. Substeps appear under their parent step when the parent is active, with simpler indicators (check mark for completed, dot for active, dash for upcoming) and the same navigation rules: any visited substep stays clickable. Setting `Drawer.Steps` `value` to a substep's value automatically marks the parent step as active.
+For multi-step flows, put a [Stepper](/components/navigation/stepper) inside `Drawer.Rail` and render the active step content in `Drawer.DualPaneMain`. Control the active step with the `value` and `onValueChange` props on `Stepper.Root`. Sub-flows use `Stepper.SubStep` the same way they do outside a drawer.
 
 Use `size="md"`, `size="lg"`, or `size="xl"` on `Drawer.Content` so the rail and the main pane both have room. The panes never stack — the right pane stays beside the rail and shrinks with the viewport down to the `xs` drawer width as a [minimum](#sizes); past that point the dual pane scrolls horizontally. This applies at every `size` (including the fixed sizes), because `Drawer.Content` is also capped at the viewport's width.
 
@@ -1036,20 +1034,18 @@ Use `size="md"`, `size="lg"`, or `size="xl"` on `Drawer.Content` so the rail and
 
         <Drawer.Content size="lg">
           <Drawer.DualPane>
-            <Drawer.Steps
-              value={currentStep}
-              onValueChange={setCurrentStep}
-              title="Title"
-            >
-              {steps.map((step) => (
-                <Drawer.Step
-                  key={step.value}
-                  value={step.value}
-                  title={step.title}
-                  description={step.description}
-                />
-              ))}
-            </Drawer.Steps>
+            <Drawer.Rail title="Title" aria-label="Steps">
+              <Stepper.Root value={currentStep} onValueChange={setCurrentStep}>
+                {steps.map((step) => (
+                  <Stepper.Step
+                    key={step.value}
+                    value={step.value}
+                    title={step.title}
+                    description={step.description}
+                  />
+                ))}
+              </Stepper.Root>
+            </Drawer.Rail>
 
             <Drawer.DualPaneMain>
               <Drawer.Header>
@@ -1109,12 +1105,14 @@ Use `size="md"`, `size="lg"`, or `size="xl"` on `Drawer.Content` so the rail and
 
   <Drawer.Content size="lg">
     <Drawer.DualPane>
-      <Drawer.Steps value={currentStep} onValueChange={setCurrentStep} title="Title">
-        <Drawer.Step value="details" title="Step Title" description="Description" />
-        <Drawer.Step value="configuration" title="Step Title" description="Description" />
-        <Drawer.Step value="permissions" title="Step Title" description="Description" />
-        <Drawer.Step value="review" title="Step Title" description="Description" />
-      </Drawer.Steps>
+      <Drawer.Rail title="Title" aria-label="Steps">
+        <Stepper.Root value={currentStep} onValueChange={setCurrentStep}>
+          <Stepper.Step value="details" title="Step Title" description="Description" />
+          <Stepper.Step value="configuration" title="Step Title" description="Description" />
+          <Stepper.Step value="permissions" title="Step Title" description="Description" />
+          <Stepper.Step value="review" title="Step Title" description="Description" />
+        </Stepper.Root>
+      </Drawer.Rail>
 
       <Drawer.DualPaneMain>
         <Drawer.Header>
@@ -1149,7 +1147,7 @@ Use `size="md"`, `size="lg"`, or `size="xl"` on `Drawer.Content` so the rail and
 
 ### Substeps
 
-Nest `Drawer.SubStep` children inside a `Drawer.Step` to give that step its own sub-flow. Substeps appear under their parent when the parent is the active step (driven by setting `Drawer.Steps`' `value` to the parent's value or to any of its substep values). They use simpler indicators — check mark for completed, filled dot for active, dash for upcoming — and follow the same navigation rules as top-level steps: any substep the user has previously visited stays clickable so they can move freely between them, while substeps that have never been reached are read-only.
+Nest `Stepper.SubStep` children inside a `Stepper.Step` the same way you would outside a drawer. See [Stepper substeps](/components/navigation/stepper#substeps) for the full API.
 
 <DocsPage.ComponentExample
   client:only
@@ -1165,27 +1163,24 @@ Nest `Drawer.SubStep` children inside a `Drawer.Step` to give that step its own 
 
         <Drawer.Content size="md">
           <Drawer.DualPane>
-            <Drawer.Steps
-              value={currentStep}
-              onValueChange={setCurrentStep}
-              title="Title"
-              aria-label="Workspace creation steps"
-            >
-              <Drawer.Step value="step1" title="Step 1" description="Description" />
-              <Drawer.Step value="step2" title="Step 2" description="Description">
-                <Drawer.SubStep value="step2.1" title="Step 2.1" />
-                <Drawer.SubStep value="step2.2" title="Step 2.2" />
-                <Drawer.SubStep value="step2.3" title="Step 2.3" />
-              </Drawer.Step>
-              <Drawer.Step value="step3" title="Step 3" description="Description" />
-            </Drawer.Steps>
+            <Drawer.Rail title="Title" aria-label="Workspace creation steps">
+              <Stepper.Root value={currentStep} onValueChange={setCurrentStep}>
+                <Stepper.Step value="step1" title="Step 1" description="Description" />
+                <Stepper.Step value="step2" title="Step 2" description="Description">
+                  <Stepper.SubStep value="step2.1" title="Step 2.1" />
+                  <Stepper.SubStep value="step2.2" title="Step 2.2" />
+                  <Stepper.SubStep value="step2.3" title="Step 2.3" />
+                </Stepper.Step>
+                <Stepper.Step value="step3" title="Step 3" description="Description" />
+              </Stepper.Root>
+            </Drawer.Rail>
 
             <Drawer.DualPaneMain>
               <Drawer.Header>
                 <Drawer.Title>{currentStep}</Drawer.Title>
                 <Drawer.Description>
                   Click any step or substep you've already visited — even ones ahead of where you are now — to
-                  jump straight to it. Setting the rail's <code>value</code> to a substep automatically marks
+                  jump straight to it. Setting the stepper's <code>value</code> to a substep automatically marks
                   the parent step as active.
                 </Drawer.Description>
               </Drawer.Header>
@@ -1205,18 +1200,20 @@ Nest `Drawer.SubStep` children inside a `Drawer.Step` to give that step its own 
 ```typescript jsx
 const [currentStep, setCurrentStep] = useState('step2.2');
 
-<Drawer.Steps value={currentStep} onValueChange={setCurrentStep} title="Title">
-  <Drawer.Step value="step1" title="Step 1" description="Description" />
+<Drawer.Rail title="Title" aria-label="Workspace creation steps">
+  <Stepper.Root value={currentStep} onValueChange={setCurrentStep}>
+    <Stepper.Step value="step1" title="Step 1" description="Description" />
 
-  {/* Drawer.Step accepts Drawer.SubStep children for sub-flows. */}
-  <Drawer.Step value="step2" title="Step 2" description="Description">
-    <Drawer.SubStep value="step2.1" title="Step 2.1" />
-    <Drawer.SubStep value="step2.2" title="Step 2.2" />
-    <Drawer.SubStep value="step2.3" title="Step 2.3" />
-  </Drawer.Step>
+    {/* Stepper.Step accepts Stepper.SubStep children for sub-flows. */}
+    <Stepper.Step value="step2" title="Step 2" description="Description">
+      <Stepper.SubStep value="step2.1" title="Step 2.1" />
+      <Stepper.SubStep value="step2.2" title="Step 2.2" />
+      <Stepper.SubStep value="step2.3" title="Step 2.3" />
+    </Stepper.Step>
 
-  <Drawer.Step value="step3" title="Step 3" description="Description" />
-</Drawer.Steps>
+    <Stepper.Step value="step3" title="Step 3" description="Description" />
+  </Stepper.Root>
+</Drawer.Rail>
 ```
 
 ### Reference content
@@ -1339,11 +1336,13 @@ While the nested drawer is open the parent dual pane stays mounted (its state, s
 
         <Drawer.Content size="lg">
           <Drawer.DualPane>
-            <Drawer.Steps title="Title" value={step} onValueChange={setStep} aria-label="Steps">
-              <Drawer.Step value="details" title="Step" description="Description" />
-              <Drawer.Step value="trigger" title="Step" description="Description" />
-              <Drawer.Step value="review" title="Step" description="Description" />
-            </Drawer.Steps>
+            <Drawer.Rail title="Title" aria-label="Steps">
+              <Stepper.Root value={step} onValueChange={setStep}>
+                <Stepper.Step value="details" title="Step" description="Description" />
+                <Stepper.Step value="trigger" title="Step" description="Description" />
+                <Stepper.Step value="review" title="Step" description="Description" />
+              </Stepper.Root>
+            </Drawer.Rail>
 
             <Drawer.DualPaneMain>
               <Drawer.Header>
@@ -1416,11 +1415,13 @@ While the nested drawer is open the parent dual pane stays mounted (its state, s
 
   <Drawer.Content size="lg">
     <Drawer.DualPane>
-      <Drawer.Steps title="Title" value={step} onValueChange={setStep}>
-        <Drawer.Step value="details" title="Step" description="Description" />
-        <Drawer.Step value="trigger" title="Step" description="Description" />
-        <Drawer.Step value="review" title="Step" description="Description" />
-      </Drawer.Steps>
+      <Drawer.Rail title="Title" aria-label="Steps">
+        <Stepper.Root value={step} onValueChange={setStep}>
+          <Stepper.Step value="details" title="Step" description="Description" />
+          <Stepper.Step value="trigger" title="Step" description="Description" />
+          <Stepper.Step value="review" title="Step" description="Description" />
+        </Stepper.Root>
+      </Drawer.Rail>
 
       <Drawer.DualPaneMain>
         <Drawer.Header>
@@ -1473,7 +1474,7 @@ While the nested drawer is open the parent dual pane stays mounted (its state, s
 
 ### Sizes
 
-The dual pane drawer inherits its width from `Drawer.Content`'s `size` prop. The panes always render side by side. The right pane is fluid — it shrinks with the available space — but it has a `min-width` of the `xs` drawer size (`var(--cn-drawer-xs)`) so it never collapses below a usable width. If the drawer becomes narrower than the steps rail plus that minimum (for example a `size="full"` drawer on a narrow viewport, a fixed `size` like `lg` on a viewport that's smaller than `lg`, or a small fixed `size`), the dual pane scrolls horizontally instead of clipping content. Use `md` or larger to give both panes comfortable room without scrolling.
+The dual pane drawer inherits its width from `Drawer.Content`'s `size` prop. The panes always render side by side. The right pane is fluid — it shrinks with the available space — but it has a `min-width` of the `xs` drawer size (`var(--cn-drawer-xs)`) so it never collapses below a usable width. If the drawer becomes narrower than the rail plus that minimum (for example a `size="full"` drawer on a narrow viewport, a fixed `size` like `lg` on a viewport that's smaller than `lg`, or a small fixed `size`), the dual pane scrolls horizontally instead of clipping content. Use `md` or larger to give both panes comfortable room without scrolling.
 
 `Drawer.Content` itself is capped at the viewport's width and height (`100vw` / `100vh`), so a fixed size never overflows the screen — when the viewport is narrower than the chosen `size`, the drawer fills the viewport and the dual pane behaves the same as `full`.
 
@@ -1510,20 +1511,18 @@ You can override the right pane's floor by setting `--cn-drawer-dual-pane-main-m
 
             <Drawer.Content size={size}>
               <Drawer.DualPane>
-                <Drawer.Steps
-                  value={currentStep}
-                  onValueChange={setCurrentStep}
-                  title={\`Size: \${size}\`}
-                >
-                  {steps.map((step) => (
-                    <Drawer.Step
-                      key={step.value}
-                      value={step.value}
-                      title={step.title}
-                      description={step.description}
-                    />
-                  ))}
-                </Drawer.Steps>
+                <Drawer.Rail title={\`Size: \${size}\`} aria-label="Steps">
+                  <Stepper.Root value={currentStep} onValueChange={setCurrentStep}>
+                    {steps.map((step) => (
+                      <Stepper.Step
+                        key={step.value}
+                        value={step.value}
+                        title={step.title}
+                        description={step.description}
+                      />
+                    ))}
+                  </Stepper.Root>
+                </Drawer.Rail>
 
                 <Drawer.DualPaneMain>
                   <Drawer.Header>
@@ -1534,7 +1533,7 @@ You can override the right pane's floor by setting `--cn-drawer-dual-pane-main-m
 
                   <Drawer.Body>
                     <p className="font-body-normal">
-                      The steps rail and the main pane always render side by side. The main pane shrinks with the viewport but never below the <code>xs</code> drawer width — past that point the dual pane scrolls horizontally.
+                      The rail and the main pane always render side by side. The main pane shrinks with the viewport but never below the <code>xs</code> drawer width — past that point the dual pane scrolls horizontally.
                     </p>
                   </Drawer.Body>
 
@@ -1569,8 +1568,7 @@ Dual-pane row layout wrapper.
   props={[
     {
       name: "children",
-      description:
-        "A rail (Drawer.Rail or Drawer.Steps) plus a Drawer.DualPaneMain.",
+      description: "A Drawer.Rail plus a Drawer.DualPaneMain.",
       required: true,
       value: "ReactNode",
     },
@@ -1586,7 +1584,7 @@ Dual-pane row layout wrapper.
 
 ### `Rail`
 
-Generic left rail for a dual pane drawer. Provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and renders arbitrary children. Use this for non-stepped content like a glossary, definition list, file tree, related-records list, or browse view. For numbered multi-step flows, use [`Drawer.Steps`](#steps) instead.
+Generic left rail for a dual pane drawer. Provides the rail's chrome — fixed width, surface, border, optional title header, and an independent scroll area — and renders arbitrary children. Use this for reference content like a glossary, definition list, file tree, related-records list, or browse view. For numbered multi-step flows, put a [Stepper](/components/navigation/stepper) inside the rail.
 
 Renders an `<aside>` element so screen readers expose it as a complementary region; pair it with `aria-label` to give that region a name.
 
@@ -1623,111 +1621,9 @@ Renders an `<aside>` element so screen readers expose it as a complementary regi
   ]}
 />
 
-### `Steps`
-
-Left step rail with independent scrolling and controlled active step state.
-
-<DocsPage.PropsTable
-  props={[
-    {
-      name: "value",
-      description: "Value of the active step.",
-      required: true,
-      value: "string",
-    },
-    {
-      name: "onValueChange",
-      description:
-        "Callback when the user selects a completed or current step.",
-      required: false,
-      value: "(value: string) => void",
-      defaultValue: "undefined",
-    },
-    {
-      name: "title",
-      description:
-        "Optional heading rendered above the step list (for example the drawer's title).",
-      required: false,
-      value: "ReactNode",
-      defaultValue: "undefined",
-    },
-    {
-      name: "aria-label",
-      description: "Accessible name for the step navigation region.",
-      required: false,
-      value: "string",
-      defaultValue: "Drawer steps",
-    },
-    {
-      name: "children",
-      description: "Drawer.Step components.",
-      required: true,
-      value: "ReactNode",
-    },
-  ]}
-/>
-
-### `Step`
-
-A single step in the step rail. Renders an indicator circle with the step number for active and upcoming steps, and a check mark for completed steps. Active and completed steps are rendered as buttons; upcoming steps are read-only. Pass `Drawer.SubStep` children to give the step its own sub-flow — substeps appear under the step when it is active.
-
-<DocsPage.PropsTable
-  props={[
-    {
-      name: "value",
-      description: "Unique value used to identify the step.",
-      required: true,
-      value: "string",
-    },
-    {
-      name: "title",
-      description: "Step title.",
-      required: true,
-      value: "ReactNode",
-    },
-    {
-      name: "description",
-      description: "Optional description rendered below the title.",
-      required: false,
-      value: "ReactNode",
-      defaultValue: "undefined",
-    },
-    {
-      name: "children",
-      description:
-        "Optional Drawer.SubStep children. Substeps render under the step when the step is active (when the rail's value matches the step or any of its substeps).",
-      required: false,
-      value: "ReactNode",
-      defaultValue: "undefined",
-    },
-  ]}
-/>
-
-### `SubStep`
-
-A single substep nested inside a `Drawer.Step`. Renders a smaller, no-circle indicator (check mark for completed, filled dot for active, dash for upcoming) plus a title. Completed and active substeps are rendered as buttons; upcoming substeps are read-only. The parent step is automatically treated as active whenever any of its substeps is the rail's `value`, and top-level steps after the parent stay upcoming until the user moves past the parent.
-
-<DocsPage.PropsTable
-  props={[
-    {
-      name: "value",
-      description:
-        "Unique value used to identify the substep. Setting Drawer.Steps' value to this marks the parent step as active.",
-      required: true,
-      value: "string",
-    },
-    {
-      name: "title",
-      description: "Substep title.",
-      required: true,
-      value: "ReactNode",
-    },
-  ]}
-/>
-
 ### `DualPaneMain`
 
-Right-hand column for the active step header, body, and footer.
+Right-hand column for the main pane header, body, and footer.
 
 <DocsPage.PropsTable
   props={[
