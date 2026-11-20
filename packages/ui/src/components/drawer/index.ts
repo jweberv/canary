@@ -16,9 +16,6 @@ import { DrawerFooter } from './DrawerFooter'
 import { DrawerHeader, DrawerHeaderProps } from './DrawerHeader'
 import { DrawerRail, type DrawerRailProps } from './DrawerRail'
 import { DrawerRoot } from './DrawerRoot'
-import { DrawerStep, type DrawerStepProps } from './DrawerStep'
-import { DrawerSteps, type DrawerStepsProps } from './DrawerSteps'
-import { DrawerSubStep, type DrawerSubStepProps } from './DrawerSubStep'
 import { DrawerTitle } from './DrawerTitle'
 import { DrawerTrigger } from './DrawerTrigger'
 
@@ -30,10 +27,7 @@ export type {
   DrawerContentProps,
   DrawerHeaderProps,
   DrawerHeaderV2Props,
-  DrawerRailProps,
-  DrawerStepProps,
-  DrawerStepsProps,
-  DrawerSubStepProps
+  DrawerRailProps
 }
 
 export const Drawer = {
@@ -41,6 +35,10 @@ export const Drawer = {
   Trigger: DrawerTrigger,
   Content: DrawerContent,
   Header: DrawerHeader,
+  /**
+   * @deprecated Use `Drawer.Header` with the structured props (`title`, `tagline`,
+   * `description`, `actions`, `tabs`, `isLoading`) instead — it now embeds this layout.
+   */
   HeaderV2: DrawerHeaderV2,
   Body: DrawerBody,
   Footer: DrawerFooter,
@@ -50,8 +48,5 @@ export const Drawer = {
   Tagline: DrawerTagline,
   DualPane: DrawerDualPane,
   Rail: DrawerRail,
-  Steps: DrawerSteps,
-  Step: DrawerStep,
-  SubStep: DrawerSubStep,
   DualPaneMain: DrawerDualPaneMain
 }

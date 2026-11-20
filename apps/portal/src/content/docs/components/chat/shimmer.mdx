@@ -1,75 +1,25 @@
 ---
 title: Shimmer
 description: Animated text shimmer effect for loading states and visual emphasis
-beta: true
 ---
 
 import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
 
-The `Shimmer` component creates an animated text shimmer effect, commonly used to indicate loading states or add visual emphasis to text elements in AI and chat interfaces.
+<PageTabsToc />
 
-## Usage
+<div id="page-level-tabs">
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<Shimmer>Loading response...</Shimmer>`}
-/>
+<Tabs>
 
-## With Different Duration
+<TabItem label="Overview">
 
-Control the animation speed using the `duration` prop (in seconds).
+The `Shimmer` component animates a sweep of light across text, most often to signal that content is still generating in AI and chat interfaces. It wraps a single string of text and renders it as any element you choose.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="flex flex-col gap-cn-md">
-  <Shimmer duration={1}>Fast shimmer (1s)</Shimmer>
-  <Shimmer duration={2}>Default shimmer (2s)</Shimmer>
-  <Shimmer duration={4}>Slow shimmer (4s)</Shimmer>
-</div>`}
-/>
+<DocsPage.ShimmerPlayground client:only />
 
-## With Different Spread
-
-The `spread` prop controls the width of the shimmer highlight effect. Higher values create a wider shimmer.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="flex flex-col gap-cn-md">
-  <Shimmer spread={1}>Narrow spread</Shimmer>
-  <Shimmer spread={2}>Default spread</Shimmer>
-  <Shimmer spread={4}>Wide spread</Shimmer>
-</div>`}
-/>
-
-## With Different Colors
-
-Use the `color` prop to change the shimmer text color. Uses the same color system as the `Text` component.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="flex flex-col gap-cn-md">
-  <Shimmer color="foreground-1">Foreground 1</Shimmer>
-  <Shimmer color="foreground-2">Foreground 2 (default)</Shimmer>
-  <Shimmer color="foreground-3">Foreground 3</Shimmer>
-  <Shimmer color="brand">Brand color</Shimmer>
-  <Shimmer color="success">Success color</Shimmer>
-</div>`}
-/>
-
-## Custom Element Type
-
-Use the `as` prop to render the shimmer as a different HTML element.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="flex flex-col gap-cn-md">
-  <Shimmer as="span">Span element</Shimmer>
-  <Shimmer as="h3" className="text-xl font-semibold">Heading element</Shimmer>
-  <Shimmer as="div">Div element</Shimmer>
-</div>`}
-/>
-
-## Usage
+## Installation
 
 ```typescript jsx
 import { Shimmer } from '@harnessio/ui/components'
@@ -88,37 +38,126 @@ import { Shimmer } from '@harnessio/ui/components'
 </Shimmer>
 
 // As a different element
-<Shimmer as="h2" className="text-lg">
+<Shimmer as="h2" variant="heading-base">
   Loading title...
 </Shimmer>
 ```
 
-## API Reference
+</TabItem>
 
-### Props
+<TabItem label="Usage">
 
-| Prop        | Type           | Default          | Description                                                       |
-| ----------- | -------------- | ---------------- | ----------------------------------------------------------------- |
-| `children`  | `string`       | —                | The text content to display with the shimmer effect               |
-| `as`        | `ElementType`  | `"p"`            | The HTML element type to render                                   |
-| `className` | `string`       | —                | Additional CSS classes to apply                                   |
-| `duration`  | `number`       | `2`              | Animation duration in seconds                                     |
-| `spread`    | `number`       | `2`              | Multiplier for the shimmer highlight width (based on text length) |
-| `color`     | `ShimmerColor` | `"foreground-2"` | Text color using the design system color tokens                   |
+## Anatomy
 
-### Color Variants
+`Shimmer` renders a single line of text (passed as `children`) inside a `<p>` by default, with an infinitely-repeating gradient sweep. It takes the same typographic `variant` and `color` tokens as `Text`, so it slots in wherever a piece of text would go.
 
-The `color` prop accepts the following values:
+```tsx
+<Shimmer>Generating response...</Shimmer>
+```
 
-| Value          | Description                    |
-| -------------- | ------------------------------ |
-| `foreground-1` | Primary foreground color       |
-| `foreground-2` | Secondary foreground (default) |
-| `foreground-3` | Tertiary foreground            |
-| `foreground-4` | Quaternary foreground          |
-| `disabled`     | Disabled state color           |
-| `success`      | Success state color            |
-| `warning`      | Warning state color            |
-| `danger`       | Danger state color             |
-| `brand`        | Brand color                    |
-| `merged`       | Merged state color             |
+- **`children`** must be a plain string — the component measures its length to size the shimmer band, so it can't wrap arbitrary nodes.
+- **`as`** swaps the rendered element (`p` by default) — use `span` inline, or a heading element for a loading title.
+- **`variant`** and **`color`** match the `Text` component's typography and color tokens, so the shimmering text lines up with the real text it stands in for.
+
+## Best practices
+
+{/* TODO: editorial — please review against product guidance. */}
+
+**Do**
+
+- Reach for `Shimmer` on short, transient labels — "Thinking…", "Generating response…" — while a model is working.
+- Match the `variant` and `color` to the text that will replace it, so the swap-in doesn't shift the layout.
+- Swap the shimmer for the real content as soon as it's ready; it's a waiting state, not a decoration.
+
+**Don't**
+
+- Don't use it for long passages or multi-line blocks — it's tuned for a single short string.
+- Don't leave it running indefinitely; if a request stalls, show an error or retry instead of an endless shimmer.
+
+## Content
+
+{/* TODO: editorial — please review against product guidance. */}
+
+- Keep the text short and in the present tense while active ("Analyzing…", "Loading…").
+- Prefer a specific label ("Reviewing your code…") over a generic "Loading…" when you know what's happening.
+
+## Accessibility
+
+### Labeling
+
+- `Shimmer` renders ordinary text, so its content is read normally by screen readers. If it marks a region that's actively updating, consider placing it inside an `aria-live` region so the eventual result is announced.
+
+### Focus & states
+
+- The effect is purely visual (an animated background sweep) and adds no roles or interactivity. The animation loops continuously while mounted; unmount it once the real content arrives.
+
+</TabItem>
+
+<TabItem label="Properties">
+
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
+
+## Properties
+
+<DocsPage.PropsTable
+  props={[
+    {
+      name: "children",
+      description:
+        "The text to display with the shimmer effect. Must be a plain string — its length sizes the shimmer band.",
+      required: true,
+      value: "string",
+    },
+    {
+      name: "as",
+      description: "The HTML element type to render.",
+      required: false,
+      defaultValue: "'p'",
+      value: "ElementType",
+    },
+    {
+      name: "variant",
+      description:
+        "Typography variant, matching the Text component (e.g. 'body-normal', 'caption-normal', 'heading-base').",
+      required: false,
+      defaultValue: "'body-normal'",
+      value:
+        "'heading-hero' | 'heading-section' | 'heading-default' | 'heading-subsection' | 'heading-base' | 'heading-small' | 'body-normal' | 'body-single-line-normal' | 'body-strong' | 'body-single-line-strong' | 'body-code' | 'caption-normal' | 'caption-strong' | 'caption-code' | 'caption-single-line-normal'",
+    },
+    {
+      name: "color",
+      description: "Text color, using the design-system color tokens.",
+      required: false,
+      defaultValue: "'foreground-2'",
+      value:
+        "'foreground-1' | 'foreground-2' | 'foreground-3' | 'foreground-4' | 'disabled' | 'success' | 'warning' | 'danger' | 'brand' | 'merged'",
+    },
+    {
+      name: "duration",
+      description: "Animation duration in seconds.",
+      required: false,
+      defaultValue: "2",
+      value: "number",
+    },
+    {
+      name: "spread",
+      description:
+        "Multiplier for the shimmer highlight width (based on text length). Higher values widen the band.",
+      required: false,
+      defaultValue: "2",
+      value: "number",
+    },
+    {
+      name: "className",
+      description: "Additional CSS classes to apply.",
+      required: false,
+      value: "string",
+    },
+  ]}
+/>
+
+</TabItem>
+
+</Tabs>
+
+</div>

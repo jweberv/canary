@@ -3,54 +3,18 @@ import React, { KeyboardEvent, ReactNode, useEffect, useRef, useState } from 're
 import { AlertDialog } from '@components/alert-dialog'
 import { Skeleton } from '@components/skeletons'
 import { Text } from '@components/text'
+import { TooltipProvider } from '@components/tooltip'
 import { cn } from '@utils/cn'
 
 import { StepperProvider, useStepperContext } from './stepper-context'
 import { StepperProps } from './stepper-types'
 
-function ProgressCounter() {
-  const { orderedSteps, completed, effectiveActiveIndex } = useStepperContextInternal()
-
-  if (completed) {
-    return (
-      <Text as="span" variant="body-normal" color="foreground-2">
-        Complete
-      </Text>
-    )
-  }
-
-  const total = orderedSteps.length
-  const current = effectiveActiveIndex + 1
-
-  return (
-    <Text as="span" variant="body-normal" color="foreground-2">
-      Step {current}/{total}
-    </Text>
-  )
-}
-
-// Internal hook that also exposes effectiveActiveIndex for the counter
-function useStepperContextInternal() {
-  const ctx = useStepperContext()
-  const activeIndex = ctx.orderedSteps.indexOf(ctx.value)
-
-  // Check if value is a substep
-  let effectiveActiveIndex = activeIndex
-  if (activeIndex < 0) {
-    for (const [parent] of ctx.subSteps.entries()) {
-      const subs = ctx.subSteps.get(parent) || []
-      if (subs.includes(ctx.value)) {
-        effectiveActiveIndex = ctx.orderedSteps.indexOf(parent)
-        break
-      }
-    }
-  }
-
-  return { ...ctx, effectiveActiveIndex }
-}
-
 function StepperList({ children }: { children: ReactNode }) {
-  const { transitioning } = useStepperContext()
+  const { transitioning, orientation } = useStepperContext()
+  // WAI-ARIA authoring practices: horizontal widgets navigate with Left/Right, vertical with
+  // Up/Down. Swapped rather than supporting both, so the unused axis doesn't silently no-op.
+  const nextKey = orientation === 'horizontal' ? 'ArrowRight' : 'ArrowDown'
+  const prevKey = orientation === 'horizontal' ? 'ArrowLeft' : 'ArrowUp'
 
   const handleKeyDown = (e: KeyboardEvent<HTMLOListElement>) => {
     const list = e.currentTarget
@@ -61,11 +25,11 @@ function StepperList({ children }: { children: ReactNode }) {
     let nextIndex: number | null = null
 
     switch (e.key) {
-      case 'ArrowDown':
+      case nextKey:
         e.preventDefault()
         nextIndex = currentIndex < buttons.length - 1 ? currentIndex + 1 : currentIndex
         break
-      case 'ArrowUp':
+      case prevKey:
         e.preventDefault()
         nextIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex
         break
@@ -99,7 +63,7 @@ function StepperList({ children }: { children: ReactNode }) {
 
 function StepperLiveRegion() {
   const ctx = useStepperContext()
-  const { orderedSteps, value } = ctx
+  const { orderedSteps, value, stepMeta } = ctx
   const [announcement, setAnnouncement] = useState('')
   const isFirstRender = useRef(true)
   const prevValueRef = useRef(value)
@@ -114,12 +78,18 @@ function StepperLiveRegion() {
 
     const stepIndex = orderedSteps.indexOf(value)
     if (stepIndex >= 0) {
-      setAnnouncement(`Step ${stepIndex + 1} of ${orderedSteps.length}`)
+      // Prefer the active step's own totalStepsOverride (flat-mode "Step n/total" badge, see
+      // stepper-step.tsx's TopLevelStep) over orderedSteps.length, which only counts steps mounted
+      // so far under progressive disclosure and can undercount the flow's real total — keeping the
+      // announcement in sync with the visible badge.
+      const totalStepsOverride = stepMeta.get(value)?.totalStepsOverride
+      const total = totalStepsOverride ?? orderedSteps.length
+      setAnnouncement(`Step ${stepIndex + 1} of ${total}`)
     } else {
-      // It's a substep value — just announce it
+      // It's a nested step value — just announce it
       setAnnouncement(value)
     }
-  }, [value, orderedSteps])
+  }, [value, orderedSteps, stepMeta])
 
   return (
     <span className="sr-only" aria-live="polite" aria-atomic="true">
@@ -142,7 +112,9 @@ function StepperConfirmDialog() {
       onCancel={cancelNavigation}
       theme="warning"
     >
-      <AlertDialog.Content title="Go back?">{pendingNavigation.message}</AlertDialog.Content>
+      <AlertDialog.Content title="Go back?">
+        <p className="cn-stepper-go-back-body">{pendingNavigation.message}</p>
+      </AlertDialog.Content>
     </AlertDialog.Root>
   )
 }
@@ -181,6 +153,9 @@ export function StepperRoot({
   onBeforeChange,
   showConnectors = true,
   completed = false,
+  orientation = 'vertical',
+  disableCompletedFade = false,
+  collapsibleNestedSteps = false,
   skeletonCount = 3,
   className,
   children
@@ -192,20 +167,35 @@ export function StepperRoot({
       onBeforeChange={onBeforeChange}
       showConnectors={showConnectors}
       completed={completed}
+      orientation={orientation}
+      collapsibleNestedSteps={collapsibleNestedSteps}
     >
-      <nav className={cn('cn-stepper', className)} aria-label="Progress steps">
-        <header className="cn-stepper-header">
-          {title && (
-            <Text as="span" variant="heading-small" color="foreground-2">
-              {title}
-            </Text>
+      {/* TooltipProvider wraps the whole stepper as a general safety net for any Tooltip a
+          consumer might render inside step/nested-step content (e.g. card bodies) — Radix
+          providers nest safely, so this is a no-op if the consumer already has its own. */}
+      <TooltipProvider>
+        <nav
+          className={cn(
+            'cn-stepper',
+            orientation === 'horizontal' && 'cn-stepper-horizontal',
+            collapsibleNestedSteps && 'cn-stepper-collapsible-nested-steps',
+            disableCompletedFade && 'cn-stepper-disable-completed-fade',
+            className
           )}
-          <ProgressCounter />
-        </header>
-        <StepperLiveRegion />
-        <StepperBody skeletonCount={skeletonCount}>{children}</StepperBody>
-        <StepperConfirmDialog />
-      </nav>
+          aria-label="Progress steps"
+        >
+          {title && (
+            <header className="cn-stepper-header">
+              <Text as="span" variant="heading-small" color="foreground-2">
+                {title}
+              </Text>
+            </header>
+          )}
+          <StepperLiveRegion />
+          <StepperBody skeletonCount={skeletonCount}>{children}</StepperBody>
+          <StepperConfirmDialog />
+        </nav>
+      </TooltipProvider>
     </StepperProvider>
   )
 }

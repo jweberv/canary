@@ -1,10 +1,13 @@
 import {
   Children,
   cloneElement,
+  CSSProperties,
   forwardRef,
   HTMLAttributes,
   isValidElement,
+  MouseEvent,
   ReactNode,
+  Ref,
   TdHTMLAttributes,
   ThHTMLAttributes
 } from 'react'
@@ -48,6 +51,27 @@ export interface TableRootV2Props extends HTMLAttributes<HTMLTableElement>, Vari
   tableClassName?: string
   disableHighlightOnHover?: boolean
   paginationProps?: PaginationProps
+  /**
+   * Opt-in sticky mode. Renders a single, well-defined scroll viewport
+   * (`cn-table-v2-viewport`) so sticky-positioned cells (e.g. sticky headers)
+   * resolve against one deterministic scroll container.
+   * When unset, the DOM structure and overflow behavior are unchanged.
+   */
+  stickyHeader?: boolean
+  /**
+   * Maximum height of the scroll viewport. Only applies in sticky mode.
+   */
+  maxHeight?: CSSProperties['maxHeight']
+  /**
+   * Ref forwarded to the scroll viewport element. Only applies in sticky mode.
+   */
+  viewportRef?: Ref<HTMLDivElement>
+  /**
+   * Optional overlay rendered as a sibling of `<table>` inside the scroll
+   * viewport. Used by DataTable for a column-resize indicator that is not
+   * clipped by header cells.
+   */
+  overlay?: ReactNode
 }
 
 const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
@@ -59,6 +83,11 @@ const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
       tableClassName,
       disableHighlightOnHover = false,
       paginationProps: { className: paginationClassName, ...paginationProps } = {} as PaginationProps,
+      stickyHeader = false,
+      maxHeight,
+      viewportRef,
+      overlay,
+      style,
       ...props
     },
     ref
@@ -68,11 +97,23 @@ const TableRoot = forwardRef<HTMLTableElement, TableRootV2Props>(
         'cn-table-v2-container',
         tableVariants({ size, variant }),
         { 'cn-table-v2-highlight-hover': !disableHighlightOnHover },
+        { 'cn-table-v2-sticky': stickyHeader },
         className
       )}
     >
-      <div className="overflow-x-auto">
-        <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} {...props} />
+      <div
+        className={cn(stickyHeader ? 'cn-table-v2-viewport' : 'overflow-x-auto')}
+        style={{ maxHeight: stickyHeader ? maxHeight : undefined }}
+        ref={stickyHeader ? viewportRef : undefined}
+      >
+        {overlay !== undefined ? (
+          <div className="cn-table-v2-overlay-host" style={style}>
+            <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} style={style} {...props} />
+            {overlay}
+          </div>
+        ) : (
+          <table ref={ref} className={cn('cn-table-v2-element', tableClassName)} style={style} {...props} />
+        )}
       </div>
       {paginationProps && (
         <Pagination
@@ -128,6 +169,8 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(({ className, se
     if (!disabled && (props.to || props.linkProps || props?.onClick)) {
       if (child.props.disableLink) return child
 
+      // One tab stop per row. The first interactive cell's overlay gets 0; the rest get -1.
+      // Table.Cell places this index on the overlay, which is the focused element.
       const currentTabIndex = isFirstLink ? 0 : -1
 
       if (child.props?.to || child.props?.linkProps || child.props?.onClick) {
@@ -185,6 +228,12 @@ export interface TableHeadProps extends ThHTMLAttributes<HTMLTableCellElement> {
   containerProps?: FlexProps
   hideDivider?: boolean
   contentClassName?: string
+  /**
+   * Optional chrome rendered as a direct child of the `<th>`, outside the
+   * label/sort layout. Used by DataTable for column resize handles so they
+   * can be positioned against the cell boundary.
+   */
+  resizeHandle?: ReactNode
 }
 
 const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
@@ -198,6 +247,7 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
       hideDivider = false,
       containerProps,
       contentClassName,
+      resizeHandle,
       ...props
     },
     ref
@@ -240,13 +290,15 @@ const TableHead = forwardRef<HTMLTableCellElement, TableHeadProps>(
         className={cn(
           'cn-table-v2-head',
           {
-            'cn-table-v2-head-sortable': sortable
+            'cn-table-v2-head-sortable': sortable,
+            'cn-table-v2-head-resizable': !!resizeHandle
           },
           className
         )}
         {...props}
       >
         {contentElement}
+        {resizeHandle}
       </th>
     )
   }
@@ -260,14 +312,53 @@ interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
   onClick?: () => void
 }
 
+const NESTED_ROW_CONTROL_SELECTOR =
+  'a, button, input, select, textarea, label, [role="button"], [role="link"], [role="menuitem"], [role="checkbox"], [role="switch"]'
+
+/** A control inside the cell owns the click. The row overlay button is included so keyboard activation does not run twice. */
+function isNestedRowControlClick(event: MouseEvent<HTMLTableCellElement>): boolean {
+  const target = event.target
+  if (!(target instanceof Element)) return false
+
+  const control = target.closest(NESTED_ROW_CONTROL_SELECTOR)
+  return !!control && event.currentTarget.contains(control)
+}
+
 const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(
   ({ className, to, linkProps, children, disableLink = false, onClick, tabIndex, ...props }, ref) => {
     const { Link } = useRouterContext()
     const shouldRenderLink = !disableLink && (!!to || !!linkProps)
     const shouldRenderButton = !disableLink && !to && !linkProps && !!onClick
 
+    // Click and focus are split on purpose.
+    //
+    // Focus: Table.Row passes tabIndex 0 for the first interactive cell and -1 for the rest.
+    // The index is set on the overlay, not the <td>, so each row is a single tab stop.
+    // The row focus ring keys off .cn-table-v2-cell-clickable-block:focus-visible.
+    //
+    // Link (`to` / `linkProps`): the overlay is a real anchor and receives the pointer,
+    // so Cmd-click and "open in new tab" work. The <td> has no onClick. The anchor's
+    // onClick runs the cell callback.
+    //
+    // Button (`onClick` only): the overlay does not receive the pointer. A mouse click
+    // hits the cell content and bubbles to the <td>, which runs the callback. The button
+    // stays as the keyboard target: Enter or Space fires its onClick, that event bubbles,
+    // and isNestedRowControlClick ignores the overlay so the callback runs once. Nested
+    // links, buttons, and inputs match that check and keep their own click.
     return (
-      <td ref={ref} className={cn('cn-table-v2-cell', className)} {...props}>
+      <td
+        ref={ref}
+        className={cn('cn-table-v2-cell', shouldRenderButton && 'cursor-pointer', className)}
+        {...props}
+        onClick={
+          shouldRenderButton
+            ? event => {
+                if (isNestedRowControlClick(event)) return
+                onClick?.()
+              }
+            : undefined
+        }
+      >
         {shouldRenderLink && (
           <Link
             to={to || ''}
@@ -278,7 +369,12 @@ const TableCell = forwardRef<HTMLTableCellElement, TableCellProps>(
           />
         )}
         {shouldRenderButton && (
-          <button className="cn-table-v2-cell-clickable-block" onClick={() => onClick?.()} tabIndex={tabIndex} />
+          <button
+            type="button"
+            className="cn-table-v2-cell-clickable-block pointer-events-none"
+            onClick={() => onClick?.()}
+            tabIndex={tabIndex}
+          />
         )}
         {children}
       </td>

@@ -1,5 +1,6 @@
 import accordionStyles from './accordion'
 import alertStyles from './alert'
+import alertItemStyles from './alert-item'
 import avatarStyles from './avatar'
 import badgeStyles from './badge'
 import breadcrumbStyles from './breadcrumb'
@@ -10,17 +11,23 @@ import captionStyles from './caption'
 import cardStyles from './card'
 import cardSelectStyles from './card-select'
 import checkboxStyles from './checkbox'
+import checkboxTreeStyles from './checkbox-tree'
 import dialogStyles from './dialog'
 import drawerStyles from './drawer'
 import dropdownStyles from './dropdown-menu'
+import dualPaneStepperStyles from './dual-pane-stepper'
+import flowStepperCardStyles from './flow-stepper-card'
 import formSharedStyles from './form-shared-styles'
+import gaugeStyles from './gauge'
 import iconsAndLogos from './icon-and-logo'
 import inputStyles from './input'
 import labelStyles from './label'
 import linkStyles from './link'
+import loadingBarStyles from './loading-bar'
 import messageBubbleStyles from './message-bubble'
 import meterStyles from './meter'
 import multiSelectStyles from './multi-select'
+import pageStyles from './page'
 import paginationStyles from './pagination'
 import popoverStyles from './popover'
 import progressStyles from './progress'
@@ -34,10 +41,11 @@ import selectStyles from './select'
 import shimmerStyles from './shimmer'
 import shortcutStyle from './shortcut'
 import sidebarStyles from './sidebar'
+import singlePaneStepperStyles from './single-pane-stepper'
+import singlePaneStepperV2Styles from './single-pane-stepper-v2'
 import skeletonStyles from './skeleton'
 import sliderStyles from './slider'
 import stackedListStyles from './stacked-list'
-import splitPaneStepperStyles from './split-pane-stepper'
 import stepperStyles from './stepper'
 import stickyListSectionStyles from './sticky-list-section'
 import studioCardStyles from './studio-card'
@@ -53,9 +61,11 @@ import toggleStyles from './toggle'
 import toggleGroupStyles from './toggle-group'
 import tooltipStyles from './tooltip'
 import treeStyles from './tree'
+import yamlOutputStyles from './yaml-output'
 
 export const ComponentStyles = [
   accordionStyles,
+  alertItemStyles,
   alertStyles,
   badgeStyles,
   buttonStyles,
@@ -69,10 +79,13 @@ export const ComponentStyles = [
   cardSelectStyles,
   paginationStyles,
   progressStyles,
+  loadingBarStyles,
+  gaugeStyles,
   drawerStyles,
   buttonLayoutStyles,
   tabsStyles,
   dialogStyles,
+  pageStyles,
   repoLayout,
   sandboxLayout,
   scrollAreaStyles,
@@ -98,13 +111,18 @@ export const ComponentStyles = [
   reasoningStyles,
   shimmerStyles,
   sliderStyles,
-  splitPaneStepperStyles,
+  dualPaneStepperStyles,
+  singlePaneStepperStyles,
+  singlePaneStepperV2Styles,
+  flowStepperCardStyles,
+  yamlOutputStyles,
   stepperStyles,
 
   // Form styles
   selectStyles,
   formSharedStyles,
   checkboxStyles,
+  checkboxTreeStyles,
   radioStyles,
   textareaStyles,
   inputStyles,

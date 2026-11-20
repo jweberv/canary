@@ -87,6 +87,9 @@
     "external-tickets": "Tickets externes",
     "administration": "Administration"
   },
+  "cardSelect": {
+    "comingSoon": "Coming Soon"
+  },
   "dialog": {
     "noDescription": "No description available"
   },
@@ -109,6 +112,7 @@
   },
   "filter": {
     "delete": "Delete filter",
+    "deleteSavedFilterFailed": "Failed to delete filter",
     "inputPlaceholder": "Filtrer par...",
     "buttonLabel": "Réinitialiser les filtres",
     "defaultLabel": "Filtrer",
@@ -144,6 +148,7 @@
   },
   "select": {
     "placeholder": "Sélectionnez une option",
+    "clearSelection": "Clear selection",
     "noResults": "Aucun résultat trouvé",
     "noOptions": "Aucune option disponible"
   },

@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.pnpm-store/
 dist
 dist-ssr
 *.local
@@ -41,6 +42,9 @@ yaml-editor-test/
 #cursor
 .cursor
 
+#graphify
+graphify-out/
+
 #local environment
 .env
 
@@ -50,3 +54,5 @@ blob-report/
 playwright-report/
 playwright-results/
 playwright/.cache/
+# Assist CLI error log
+.assist/

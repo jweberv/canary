@@ -5,9 +5,12 @@
 
 import AccountSolid from './icons/account-solid.svg'
 import Account from './icons/account.svg'
+import AgentDlc from './icons/agent-dlc.svg'
+import AgentServices from './icons/agent-services.svg'
 import Agents from './icons/agents.svg'
 import Agile from './icons/agile.svg'
 import AiDeepResearch from './icons/ai-deep-research.svg'
+import AiEvals from './icons/ai-evals.svg'
 import AiMlOpsSolid from './icons/ai-ml-ops-solid.svg'
 import AiMlOps from './icons/ai-ml-ops.svg'
 import AiSolid from './icons/ai-solid.svg'
@@ -15,6 +18,7 @@ import AiTestSolid from './icons/ai-test-solid.svg'
 import AiTest from './icons/ai-test.svg'
 import AiVerify from './icons/ai-verify.svg'
 import Ai from './icons/ai.svg'
+import Announcement from './icons/announcement.svg'
 import AppDiscoverySolid from './icons/app-discovery-solid.svg'
 import AppDiscovery from './icons/app-discovery.svg'
 import AppLayerImgSolid from './icons/app-layer-img-solid.svg'
@@ -59,6 +63,7 @@ import BarHorizontal from './icons/bar-horizontal.svg'
 import BarVertical from './icons/bar-vertical.svg'
 import BaseImgSolid from './icons/base-img-solid.svg'
 import BaseImg from './icons/base-img.svg'
+import BellCustom from './icons/bell-custom.svg'
 import BellOff from './icons/bell-off.svg'
 import Bell from './icons/bell.svg'
 import Blocks from './icons/blocks.svg'
@@ -89,6 +94,7 @@ import CalendarXmark from './icons/calendar-xmark.svg'
 import Calendar from './icons/calendar.svg'
 import Canary from './icons/canary.svg'
 import Cell2x2 from './icons/cell2x2.svg'
+import Change from './icons/change.svg'
 import ChaosExperiment from './icons/chaos-experiment.svg'
 import ChaosFault from './icons/chaos-fault.svg'
 import ChaosTestsSolid from './icons/chaos-tests-solid.svg'
@@ -127,6 +133,7 @@ import Cloud from './icons/cloud.svg'
 import Cluster from './icons/cluster.svg'
 import CodeBracketsSquare from './icons/code-brackets-square.svg'
 import CodeBrackets from './icons/code-brackets.svg'
+import CodeCoverage from './icons/code-coverage.svg'
 import CodeDown from './icons/code-down.svg'
 import CodeUp from './icons/code-up.svg'
 import Code from './icons/code.svg'
@@ -135,6 +142,7 @@ import CollapseSidebar from './icons/collapse-sidebar.svg'
 import Collapse from './icons/collapse.svg'
 import CollapsedItems from './icons/collapsed-items.svg'
 import Community from './icons/community.svg'
+import Complexity from './icons/complexity.svg'
 import ConnectorsSolid from './icons/connectors-solid.svg'
 import Connectors from './icons/connectors.svg'
 import ContainersSolid from './icons/containers-solid.svg'
@@ -193,6 +201,7 @@ import Drag from './icons/drag.svg'
 import Earth from './icons/earth.svg'
 import EditPencil from './icons/edit-pencil.svg'
 import Edit from './icons/edit.svg'
+import Emoji from './icons/emoji.svg'
 import EmptyCircle from './icons/empty-circle.svg'
 import EmptyPage from './icons/empty-page.svg'
 import EnergyUsageWindow from './icons/energy-usage-window.svg'
@@ -251,7 +260,10 @@ import Globe from './icons/globe.svg'
 import GripDots from './icons/grip-dots.svg'
 import Group1 from './icons/group-1.svg'
 import HalfMoon from './icons/half-moon.svg'
+import HardenedImagesSolid from './icons/hardened-images-solid.svg'
+import HardenedImages from './icons/hardened-images.svg'
 import HarnessPlugins from './icons/harness-plugins.svg'
+import HarnessVibe from './icons/harness-vibe.svg'
 import Hashtag from './icons/hashtag.svg'
 import Header from './icons/header.svg'
 import HeadsetHelp from './icons/headset-help.svg'
@@ -261,6 +273,7 @@ import HeartSolid from './icons/heart-solid.svg'
 import Heart from './icons/heart.svg'
 import HelpCircleSolid from './icons/help-circle-solid.svg'
 import HelpCircle from './icons/help-circle.svg'
+import Hygiene from './icons/hygiene.svg'
 import Import from './icons/import.svg'
 import IncidentsSolid from './icons/incidents-solid.svg'
 import Incidents from './icons/incidents.svg'
@@ -270,6 +283,7 @@ import InfrastructureSolid from './icons/infrastructure-solid.svg'
 import Infrastructure from './icons/infrastructure.svg'
 import InputSet from './icons/input-set.svg'
 import Instances from './icons/instances.svg'
+import Integration from './icons/integration.svg'
 import Internet from './icons/internet.svg'
 import ItalicSquare from './icons/italic-square.svg'
 import Italic from './icons/italic.svg'
@@ -306,6 +320,7 @@ import McpConnector from './icons/mcp-connector.svg'
 import MenuMoreHorizontal from './icons/menu-more-horizontal.svg'
 import MenuScale from './icons/menu-scale.svg'
 import Menu from './icons/menu.svg'
+import Microphone from './icons/microphone.svg'
 import MinusCircleSolid from './icons/minus-circle-solid.svg'
 import MinusCircle from './icons/minus-circle.svg'
 import MinusSquare from './icons/minus-square.svg'
@@ -357,9 +372,11 @@ import PinSlashSolid from './icons/pin-slash-solid.svg'
 import PinSlash from './icons/pin-slash.svg'
 import PinSolid from './icons/pin-solid.svg'
 import Pin from './icons/pin.svg'
+import PipelineChained from './icons/pipeline-chained.svg'
 import PipelineExecutions from './icons/pipeline-executions.svg'
 import PipelineGroup from './icons/pipeline-group.svg'
 import PipelineSolid from './icons/pipeline-solid.svg'
+import PipelineStep from './icons/pipeline-step.svg'
 import Pipeline from './icons/pipeline.svg'
 import PlaySolid from './icons/play-solid.svg'
 import Play from './icons/play.svg'
@@ -373,6 +390,7 @@ import PrComment from './icons/pr-comment.svg'
 import Presentation from './icons/presentation.svg'
 import Prohibition from './icons/prohibition.svg'
 import Project from './icons/project.svg'
+import PromptRepository from './icons/prompt-repository.svg'
 import QuestionMark from './icons/question-mark.svg'
 import Quote from './icons/quote.svg'
 import RedoAction from './icons/redo-action.svg'
@@ -385,6 +403,7 @@ import RefreshCircle from './icons/refresh-circle.svg'
 import RefreshDouble from './icons/refresh-double.svg'
 import Refresh from './icons/refresh.svg'
 import Regex from './icons/regex.svg'
+import Reliability from './icons/reliability.svg'
 import ReloadWindow from './icons/reload-window.svg'
 import ReminderHandGesture from './icons/reminder-hand-gesture.svg'
 import ReplyToMessage from './icons/reply-to-message.svg'
@@ -393,6 +412,7 @@ import RepositorySolid from './icons/repository-solid.svg'
 import Repository from './icons/repository.svg'
 import Restart from './icons/restart.svg'
 import Roles from './icons/roles.svg'
+import Rollback from './icons/rollback.svg'
 import Rolling from './icons/rolling.svg'
 import RtAction from './icons/rt-action.svg'
 import RtProbe from './icons/rt-probe.svg'
@@ -429,6 +449,7 @@ import Share from './icons/share.svg'
 import Shield from './icons/shield.svg'
 import Sidebar from './icons/sidebar.svg'
 import SingleView from './icons/single-view.svg'
+import Skills from './icons/skills.svg'
 import SlashSquare from './icons/slash-square.svg'
 import Slash from './icons/slash.svg'
 import Snowflake from './icons/snowflake.svg'
@@ -478,6 +499,7 @@ import TasVars from './icons/tas-vars.svg'
 import Tas from './icons/tas.svg'
 import TaskList from './icons/task-list.svg'
 import Tasks from './icons/tasks.svg'
+import Team from './icons/team.svg'
 import Templates from './icons/templates.svg'
 import TerminalTag from './icons/terminal-tag.svg'
 import Terminal from './icons/terminal.svg'
@@ -532,9 +554,12 @@ import ZoomOut from './icons/zoom-out.svg'
 export const IconNameMapV2 = {
   'account-solid': AccountSolid,
   account: Account,
+  'agent-dlc': AgentDlc,
+  'agent-services': AgentServices,
   agents: Agents,
   agile: Agile,
   'ai-deep-research': AiDeepResearch,
+  'ai-evals': AiEvals,
   'ai-ml-ops-solid': AiMlOpsSolid,
   'ai-ml-ops': AiMlOps,
   'ai-solid': AiSolid,
@@ -542,6 +567,7 @@ export const IconNameMapV2 = {
   'ai-test': AiTest,
   'ai-verify': AiVerify,
   ai: Ai,
+  announcement: Announcement,
   'app-discovery-solid': AppDiscoverySolid,
   'app-discovery': AppDiscovery,
   'app-layer-img-solid': AppLayerImgSolid,
@@ -586,6 +612,7 @@ export const IconNameMapV2 = {
   'bar-vertical': BarVertical,
   'base-img-solid': BaseImgSolid,
   'base-img': BaseImg,
+  'bell-custom': BellCustom,
   'bell-off': BellOff,
   bell: Bell,
   blocks: Blocks,
@@ -616,6 +643,7 @@ export const IconNameMapV2 = {
   calendar: Calendar,
   canary: Canary,
   cell2x2: Cell2x2,
+  change: Change,
   'chaos-experiment': ChaosExperiment,
   'chaos-fault': ChaosFault,
   'chaos-tests-solid': ChaosTestsSolid,
@@ -654,6 +682,7 @@ export const IconNameMapV2 = {
   cluster: Cluster,
   'code-brackets-square': CodeBracketsSquare,
   'code-brackets': CodeBrackets,
+  'code-coverage': CodeCoverage,
   'code-down': CodeDown,
   'code-up': CodeUp,
   code: Code,
@@ -662,6 +691,7 @@ export const IconNameMapV2 = {
   collapse: Collapse,
   'collapsed-items': CollapsedItems,
   community: Community,
+  complexity: Complexity,
   'connectors-solid': ConnectorsSolid,
   connectors: Connectors,
   'containers-solid': ContainersSolid,
@@ -720,6 +750,7 @@ export const IconNameMapV2 = {
   earth: Earth,
   'edit-pencil': EditPencil,
   edit: Edit,
+  emoji: Emoji,
   'empty-circle': EmptyCircle,
   'empty-page': EmptyPage,
   'energy-usage-window': EnergyUsageWindow,
@@ -778,7 +809,10 @@ export const IconNameMapV2 = {
   'grip-dots': GripDots,
   'group-1': Group1,
   'half-moon': HalfMoon,
+  'hardened-images-solid': HardenedImagesSolid,
+  'hardened-images': HardenedImages,
   'harness-plugins': HarnessPlugins,
+  'harness-vibe': HarnessVibe,
   hashtag: Hashtag,
   header: Header,
   'headset-help': HeadsetHelp,
@@ -788,6 +822,7 @@ export const IconNameMapV2 = {
   heart: Heart,
   'help-circle-solid': HelpCircleSolid,
   'help-circle': HelpCircle,
+  hygiene: Hygiene,
   import: Import,
   'incidents-solid': IncidentsSolid,
   incidents: Incidents,
@@ -797,6 +832,7 @@ export const IconNameMapV2 = {
   infrastructure: Infrastructure,
   'input-set': InputSet,
   instances: Instances,
+  integration: Integration,
   internet: Internet,
   'italic-square': ItalicSquare,
   italic: Italic,
@@ -833,6 +869,7 @@ export const IconNameMapV2 = {
   'menu-more-horizontal': MenuMoreHorizontal,
   'menu-scale': MenuScale,
   menu: Menu,
+  microphone: Microphone,
   'minus-circle-solid': MinusCircleSolid,
   'minus-circle': MinusCircle,
   'minus-square': MinusSquare,
@@ -884,9 +921,11 @@ export const IconNameMapV2 = {
   'pin-slash': PinSlash,
   'pin-solid': PinSolid,
   pin: Pin,
+  'pipeline-chained': PipelineChained,
   'pipeline-executions': PipelineExecutions,
   'pipeline-group': PipelineGroup,
   'pipeline-solid': PipelineSolid,
+  'pipeline-step': PipelineStep,
   pipeline: Pipeline,
   'play-solid': PlaySolid,
   play: Play,
@@ -900,6 +939,7 @@ export const IconNameMapV2 = {
   presentation: Presentation,
   prohibition: Prohibition,
   project: Project,
+  'prompt-repository': PromptRepository,
   'question-mark': QuestionMark,
   quote: Quote,
   'redo-action': RedoAction,
@@ -912,6 +952,7 @@ export const IconNameMapV2 = {
   'refresh-double': RefreshDouble,
   refresh: Refresh,
   regex: Regex,
+  reliability: Reliability,
   'reload-window': ReloadWindow,
   'reminder-hand-gesture': ReminderHandGesture,
   'reply-to-message': ReplyToMessage,
@@ -920,6 +961,7 @@ export const IconNameMapV2 = {
   repository: Repository,
   restart: Restart,
   roles: Roles,
+  rollback: Rollback,
   rolling: Rolling,
   'rt-action': RtAction,
   'rt-probe': RtProbe,
@@ -956,6 +998,7 @@ export const IconNameMapV2 = {
   shield: Shield,
   sidebar: Sidebar,
   'single-view': SingleView,
+  skills: Skills,
   'slash-square': SlashSquare,
   slash: Slash,
   snowflake: Snowflake,
@@ -1005,6 +1048,7 @@ export const IconNameMapV2 = {
   tas: Tas,
   'task-list': TaskList,
   tasks: Tasks,
+  team: Team,
   templates: Templates,
   'terminal-tag': TerminalTag,
   terminal: Terminal,

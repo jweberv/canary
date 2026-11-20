@@ -34,7 +34,9 @@ export default {
     zIndex: '50',
     minWidth: 'var(--cn-dropdown-min-width)',
     maxWidth: 'var(--cn-size-69)',
-    maxHeight: 'calc(var(--radix-dropdown-menu-content-available-height) - 4px)',
+    // floor lets Radix flip when this side is short; capped at ~50vh so it always fits the roomier side
+    maxHeight:
+      'max(calc(var(--radix-dropdown-menu-content-available-height) - 4px), min(var(--cn-size-60), calc(50vh - 24px)))',
     border: 'var(--cn-dropdown-border) solid var(--cn-border-3)',
     borderRadius: 'var(--cn-dropdown-radius)',
     backgroundColor: 'var(--cn-bg-3)',
@@ -58,16 +60,39 @@ export default {
       '--tw-enter-translate-x': '8px'
     },
 
+    '&.cn-saved-filters-dropdown': {
+      '--cn-dropdown-item-py': 'var(--cn-spacing-1)'
+    },
+
+    // Allow absolute children (e.g. MultiSelect creation hint) to paint outside the menu.
+    '&.cn-dropdown-menu-overflow-visible': {
+      overflow: 'visible',
+
+      '.cn-dropdown-menu-content, .cn-dropdown-menu-container': {
+        overflow: 'visible'
+      }
+    },
+
+    // DateRangeV2 is taller than the 360px menu cap. Follow the space Radix measured,
+    // leaving room for the filter header above the scroll area.
+    '&.cn-dropdown-menu-available-height': {
+      '.cn-dropdown-menu-content': {
+        maxHeight: 'calc(var(--radix-dropdown-menu-content-available-height) - 4rem)'
+      }
+    },
+
     '&-container': {
       padding: 'var(--cn-dropdown-container)',
       minWidth: '0',
       overflow: 'hidden',
 
       '&-header': {
+        flexShrink: '0',
         borderBottom: 'var(--cn-dropdown-border) solid var(--cn-border-3)'
       },
 
       '&-footer': {
+        flexShrink: '0',
         borderTop: 'var(--cn-dropdown-border) solid var(--cn-border-3)'
       }
     },
@@ -92,12 +117,37 @@ export default {
       minWidth: '0',
       '@apply transition-colors': '',
 
+      '& .cn-saved-filter-delete': {
+        opacity: '0',
+        flexShrink: '0',
+        transition: 'opacity 150ms ease'
+      },
+
       '&:not(:where([aria-disabled=true]))': {
         '&:where([data-highlighted]), &:where([data-state="open"])': {
           backgroundColor: 'var(--cn-state-hover)',
-          outline: 'none',
-          cursor: 'default'
+          cursor: 'default',
+          // Radix programmatically focuses the item (a tabindex=-1 div) on pointer move,
+          // so the browser's default focus outline — or a :focus-visible outline inherited
+          // from opening the menu via keyboard — can paint a ring on plain mouse hover.
+          // Suppress it here for every highlighted/open item; the keyboard-only rule below
+          // re-adds our ring when the pointer isn't over the item.
+          outline: 'none'
+        },
+        // Ring only for keyboard navigation. We key off Radix's own [data-highlighted]
+        // (set reliably for both mouse and keyboard) and show the ring only when the
+        // pointer is NOT over the item (:not(:hover)). Keyboard nav leaves the pointer
+        // elsewhere, so the ring shows there; mouse hover gets only the background overlay.
+        // Same specificity as the rule above but later in source order, so it wins for
+        // keyboard nav while the outline:none above still governs mouse hover.
+        '&:where([data-highlighted]):not(:where(:hover))': {
+          outline: 'var(--cn-focus)',
+          '@apply outline-offset-cn-tight': ''
         }
+      },
+
+      '&:where([data-highlighted]) .cn-saved-filter-delete, &:hover .cn-saved-filter-delete': {
+        opacity: '1'
       },
 
       '&-subtrigger': {
@@ -108,8 +158,7 @@ export default {
 
       '&:where([aria-disabled=true])': {
         opacity: 'var(--cn-disabled-opacity)',
-        cursor: 'not-allowed',
-        pointerEvents: 'none'
+        cursor: 'not-allowed'
       },
 
       '& .cn-radio-item, & .cn-checkbox-root': {

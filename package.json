@@ -1,6 +1,7 @@
 {
   "name": "harness-canary",
   "scripts": {
+    "assist": "tsx scripts/assist/index.ts",
     "clean": "pnpm clean:dist && pnpm clean:node_modules",
     "clean:dist": "pnpm -r --parallel exec -- rimraf dist",
     "clean:node_modules": "pnpm -r --parallel exec -- rimraf node_modules",
@@ -12,15 +13,14 @@
     "typecheck": "pnpm -r typecheck",
     "publish:all": "pnpm publish -r --access public",
     "preinstall": "npx only-allow pnpm",
+    "prepare": "husky",
     "pre-commit": "pnpm run -r --workspace-concurrency=1 pre-commit",
     "test": "pnpm -r test",
+    "test:coverage": "pnpm build && pnpm -r test -- --coverage",
     "playwright:test": "npx playwright test",
     "playwright:test-ui": "npx playwright test --ui",
     "playwright:update-snapshots": "npx playwright test --update-snapshots",
     "playwright:report": "exec playwright show-report",
-    "gitness:build": "pnpm -r -F './packages/*' build:ci && pnpm -r -F ./apps/gitness build",
-    "gitness:dev": "pnpm -r -F './packages/*' build && pnpm -r -F ./apps/gitness dev",
-    "gitness:mfe": "pnpm -r -F './packages/*' build && pnpm -r -F ./apps/gitness start:webpack",
     "portal:build": "pnpm -r -F './packages/*' build:ci && pnpm -r -F ./apps/portal build",
     "portal:dev": "pnpm -r -F './packages/*' build && pnpm -r -F ./apps/portal dev",
     "view-preview:build": "pnpm -r -F './packages/*' build:ci && pnpm -r -F ./apps/design-system build",
@@ -41,6 +41,7 @@
   "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903",
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
+    "@inquirer/prompts": "^8.7.4",
     "@playwright/test": "^1.55.0",
     "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
@@ -57,9 +58,11 @@
     "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.4",
     "lint-staged": "^15.2.9",
+    "ora": "^9.4.1",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
     "rimraf": "^6.0.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.14.0"
   }

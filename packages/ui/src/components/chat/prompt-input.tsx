@@ -27,7 +27,7 @@ export const PromptInputTags = ({ tags, onRemove, className, ...props }: PromptI
   if (!tags.length) return null
 
   return (
-    <div className={cn('flex flex-wrap gap-cn-xs', className)} {...props}>
+    <div className={cn('flex shrink-0 flex-wrap gap-cn-xs', className)} {...props}>
       {tags.map(tag => (
         <Tag
           key={tag.id}
@@ -51,6 +51,10 @@ export const PromptInputTextarea = ({
   ...props
 }: PromptInputTextareaProps) => {
   const handleKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = e => {
+    // IME confirmation Enter (CJK) must not submit. keyCode 229 covers Safari.
+    if (e.nativeEvent.isComposing || e.keyCode === 229) {
+      return
+    }
     if (e.key === 'Enter') {
       if (e.shiftKey) {
         // Allow newline
@@ -68,6 +72,7 @@ export const PromptInputTextarea = ({
     <Textarea
       name="message"
       autoResize={true}
+      wrapperClassName="min-h-0 flex-1 overflow-hidden"
       className={className}
       onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
         onChange?.(e)
@@ -82,7 +87,7 @@ export const PromptInputTextarea = ({
 export type PromptInputToolbarProps = HTMLAttributes<HTMLDivElement>
 
 export const PromptInputToolbar = ({ className, ...props }: PromptInputToolbarProps) => (
-  <div className={cn('flex items-center justify-between', className)} {...props} />
+  <div className={cn('flex shrink-0 items-center justify-between', className)} {...props} />
 )
 
 export type PromptInputToolsProps = HTMLAttributes<HTMLDivElement>
@@ -112,6 +117,46 @@ export const PromptInputButton = ({ variant = 'outline', size = 'xs', ...props }
   return <Toggle {...props} variant={variant} size={size} iconOnly />
 }
 
+export type PromptInputSpeechProps = ComponentProps<typeof Button> & {
+  listening?: boolean
+}
+
+export const PromptInputSpeech = ({
+  listening = false,
+  className,
+  tooltipProps,
+  disabled,
+  children,
+  ...props
+}: PromptInputSpeechProps) => {
+  const label = listening ? 'Stop voice input' : 'Start voice input'
+
+  return (
+    <span className={cn('cn-prompt-input-speech', className)} data-listening={listening ? 'true' : undefined}>
+      {listening && (
+        <>
+          <span className="cn-prompt-input-speech-ring" aria-hidden />
+          <span className="cn-prompt-input-speech-ring cn-prompt-input-speech-ring-delayed" aria-hidden />
+        </>
+      )}
+      <Button
+        type="button"
+        variant="ghost"
+        size="xs"
+        rounded
+        iconOnly
+        disabled={disabled}
+        aria-label={label}
+        aria-pressed={listening}
+        tooltipProps={tooltipProps ?? { content: listening ? 'Stop listening' : 'Voice input' }}
+        {...props}
+      >
+        {children ?? <IconV2 name="microphone" />}
+      </Button>
+    </span>
+  )
+}
+
 export const PromptInput = {
   Root: PromptInputRoot,
   Tags: PromptInputTags,
@@ -119,5 +164,6 @@ export const PromptInput = {
   Toolbar: PromptInputToolbar,
   Tools: PromptInputTools,
   Submit: PromptInputSubmit,
-  Button: PromptInputButton
+  Button: PromptInputButton,
+  Speech: PromptInputSpeech
 }

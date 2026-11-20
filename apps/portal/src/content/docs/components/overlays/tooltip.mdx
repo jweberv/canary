@@ -1,104 +1,30 @@
 ---
 title: Tooltip
-description: Tooltip component
-beta: true
+description: A small overlay that surfaces additional context for an element
 ---
 
-The Tooltip component provides additional information for an element in a small overlay.
-
 import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<TooltipProvider>
-    <div className="flex justify-center">
-        <Tooltip
-            content="Tooltips provide helpful context and information"
-        >
-            <Button variant="secondary">Hover me</Button>
-        </Tooltip>
-    </div>
-</TooltipProvider>`}
-/>
+<PageTabsToc />
 
-## Usage
+<div id="page-level-tabs">
 
-```typescript jsx
-import { Tooltip, TooltipProvider } from '@harnessio/ui/components'
+<Tabs>
 
-// ...
+<TabItem label="Overview">
 
-return (
-  <TooltipProvider> {/* typically wrapped around the entire app */}
-    {/* ... */}
-    <Tooltip
-        title="Title"
-        content={<p>This is a tooltip</p>}
-    >
-      <span>Hover me</span>
-    </Tooltip>
-  </TooltipProvider>
-)
-```
+The `Tooltip` component surfaces additional information for an element in a small overlay that appears on hover or focus. It supports a title, a scrollable body, a fixed footer, an arrow, and positioning on any side. Every `Tooltip` must have a `TooltipProvider` ancestor — typically wrapped around the entire app.
 
-## `withTooltip` HOC
+## Playground
 
-HOC for adding Tooltip support to any component.
-For the HOC to work correctly, the component must use forwardRef.
+<DocsPage.TooltipPlayground client:only />
 
-```typescript jsx
-import { withTooltip } from "@harnessio/ui/components";
+## Variations
 
-// ...
-
-const comp = withTooltip(yourComp);
-```
-
-## Themes
-
-The tooltip supports `default` and `themed` themes. The default theme provides high-contrast appearance with fixed colors and is used by default. The themed theme follows the current theme's color palette.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <TooltipProvider>
-      <ButtonLayout className="justify-center">
-        <Tooltip
-          content="High-contrast tooltip styling"
-        >
-          <Button variant="secondary">Default Theme</Button>
-        </Tooltip>
-
-        <Tooltip
-          theme="themed"
-          content="Follows current theme colors"
-        >
-          <Button variant="secondary">Themed</Button>
-        </Tooltip>
-      </ButtonLayout>
-    </TooltipProvider>
-
-`}
-/>
-
-## Hide Arrow
-
-Use `hideArrow` prop to remove the tooltip arrow.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <TooltipProvider>
-      <div className="flex justify-center">
-        <Tooltip content="Tooltip without arrow" hideArrow>
-          <Button variant="secondary">Tooltip Without Arrow</Button>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
-  `}
-/>
-
-## Vertical Scroll
+### Vertical scroll
 
 Content scrolls when it exceeds the max height.
 
@@ -124,7 +50,7 @@ Content scrolls when it exceeds the max height.
   `}
 />
 
-## Horizontal Scroll
+### Horizontal scroll
 
 Content scrolls when it exceeds the max width.
 
@@ -154,7 +80,7 @@ Content scrolls when it exceeds the max width.
   `}
 />
 
-## Both Horizontal and Vertical Scroll
+### Both horizontal and vertical scroll
 
 Content scrolls when it exceeds the max height and max width.
 
@@ -184,165 +110,157 @@ Content scrolls when it exceeds the max height and max width.
   `}
 />
 
-## Footer
+## Installation
 
-Use the `footer` prop for content that stays fixed at the bottom when the body scrolls.
+```tsx
+import { Tooltip, TooltipProvider } from "@harnessio/ui/components";
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <TooltipProvider>
-      <div className="flex justify-center">
-        <Tooltip
-          title="Tooltip with footer"
-          content={
-            <ul className="flex flex-col gap-y-cn-4xs">
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((i) => (
-                <li key={i}>Item {i}</li>
-              ))}
-            </ul>
-          }
-          footer={
-            <Button variant="link" size="md">
-              View details
-            </Button>
-          }
-        >
-          <Button variant="secondary">Hover for tooltip with footer</Button>
-        </Tooltip>
-      </div>
-    </TooltipProvider>
-  `}
-/>
+// TooltipProvider typically wraps the entire app.
+<TooltipProvider>
+  <Tooltip title="Title" content={<p>This is a tooltip</p>}>
+    <Button variant="secondary">Hover me</Button>
+  </Tooltip>
+</TooltipProvider>;
+```
 
-## Sides
+</TabItem>
 
-The tooltip can be positioned on any side: `top` (default), `bottom`, `left`, or `right`.
+<TabItem label="Usage">
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <TooltipProvider>
-      <ButtonLayout orientation="vertical" className="items-center">
-        <Tooltip
-          side="top"
-          content="Tooltip appears above the trigger"
-        >
-          <Button variant="secondary">Top Side</Button>
-        </Tooltip>
+## Anatomy
 
-        <Tooltip
-          side="bottom"
-          content="Tooltip appears below the trigger"
-        >
-          <Button variant="secondary">Bottom Side</Button>
-        </Tooltip>
+A `Tooltip` wraps a single trigger element and renders its overlay in a portal.
 
-        <Tooltip
-          side="right"
-          content="Tooltip appears to the right"
-        >
-          <Button variant="secondary">Right Side</Button>
-        </Tooltip>
+- `TooltipProvider` must sit above every tooltip — usually once at the app root. It shares delay and hover behaviour across the tooltips beneath it.
+- `Tooltip` renders its `children` as the trigger (via `asChild`), so the child must be a single focusable element that forwards its props and ref.
+- The overlay is portaled and holds up to three regions: an optional `title`, the scrollable `content` body, and an optional `footer` that stays fixed while the body scrolls.
+- An arrow points at the trigger unless `hideArrow` is set.
 
-        <Tooltip
-          side="left"
-          content="Tooltip appears to the left"
-        >
-          <Button variant="secondary">Left Side</Button>
-        </Tooltip>
-      </ButtonLayout>
-    </TooltipProvider>
+<Aside type="note">
+  The tooltip surface is always dark — including nested content — regardless of
+  whether the app is in light or dark mode. The color and contrast variants from
+  the current theme are preserved (for example `light-pro-high` renders as
+  `dark-pro-high`). The drop shadow uses the lighter elevation (`--cn-shadow-1`)
+  so it does not pick up the dark-mode black halo when forced dark over a light
+  page.
+</Aside>
 
-`}
-/>
+## The `withTooltip` HOC
 
-## Alignment
+`withTooltip` adds tooltip support to any component. For it to work, the wrapped component must use `forwardRef` and spread its props, so the ref and trigger wiring reach the underlying element.
 
-Control tooltip alignment relative to the trigger using `align` prop: `start`, `center` (default), or `end`.
+```tsx
+import { withTooltip } from "@harnessio/ui/components";
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <TooltipProvider>
-      <ButtonLayout className="justify-center">
-        <Tooltip
-          side="top"
-          content="Tooltip centered on the trigger"
-        >
-          <Button variant="secondary">Center (default)</Button>
-        </Tooltip>
-        <Tooltip
-          side="top"
-          align="start"
-          content="Tooltip aligned to the start"
-        >
-          <Button variant="secondary">Start Aligned</Button>
-        </Tooltip>
-        <Tooltip
-          side="top"
-          align="end"
-          content="Tooltip aligned to the end"
-        >
-          <Button variant="secondary">End Aligned Button</Button>
-        </Tooltip>
-      </ButtonLayout>
-    </TooltipProvider>
-  `}
-/>
+const CompWithTooltip = withTooltip(YourComp);
 
-## API Reference
+// The wrapped component gains an optional `tooltipProps` object
+// (every Tooltip prop except `children`). When omitted, no tooltip renders.
+<CompWithTooltip tooltipProps={{ content: "Helpful context" }} />;
+```
 
-### `TooltipProvider`
+## Best practices
 
-The provider component that manages tooltips. Typically wrapped around the entire app.
+{/* TODO: editorial — please review against product guidance. */}
+
+**Do**
+
+- Keep tooltip content short and supplementary — a tooltip is context, not essential information.
+- Attach the tooltip to a focusable trigger so keyboard and screen-reader users can reach it.
+- Use `title` for a short label and `content` for the detail; reach for `footer` when a persistent action or link should stay visible as the body scrolls.
+
+**Don't**
+
+- Don't put essential information or the only copy of an action inside a tooltip — it isn't visible at a glance and may be missed.
+- Don't wrap a non-interactive or non-focusable element as the trigger; the tooltip then can't be opened by keyboard.
+- Don't rely on rich markup in `title` — it only accepts a string. Use `content` for anything richer.
+
+## Accessibility
+
+### Keyboard
+
+- Focusing the trigger opens the tooltip; <kbd>Escape</kbd> closes it.
+- Hovering the trigger opens the tooltip after the `delay`; moving the pointer away closes it.
+
+### Labeling & semantics
+
+- The trigger is associated with the overlay via `aria-describedby`, so assistive tech announces the tooltip as a description of the trigger.
+- Because `children` becomes the trigger (`asChild`), pass a single focusable element that forwards props and ref — otherwise the accessibility wiring can't attach.
+
+</TabItem>
+
+<TabItem label="Properties">
+
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
+
+## Properties
+
+### TooltipProvider
 
 <DocsPage.PropsTable
   props={[
     {
       name: "children",
-      description: "Typically wraps the entire app.",
+      description:
+        "The subtree that contains tooltips. Typically the entire app.",
       required: true,
       value: "ReactNode",
+    },
+    {
+      name: "delayDuration",
+      description:
+        "Duration in ms before a tooltip opens on hover, shared by tooltips beneath the provider. Each Tooltip can override this with its own delay.",
+      required: false,
+      value: "number",
+    },
+    {
+      name: "skipDelayDuration",
+      description:
+        "How long a user has to move between triggers before the open delay is skipped. Set to 0 by default so each tooltip re-incurs its full delay.",
+      required: false,
+      defaultValue: "0",
+      value: "number",
+    },
+    {
+      name: "disableHoverableContent",
+      description:
+        "When true, the tooltip closes when the pointer leaves the trigger even if it moves onto the content.",
+      required: false,
+      value: "boolean",
     },
   ]}
 />
 
-### `Tooltip`
+### Tooltip
 
 <DocsPage.PropsTable
   props={[
     {
       name: "children",
-      description: "Element to wrap the tooltip around.",
+      description:
+        "The trigger element the tooltip wraps. Rendered via asChild, so it must be a single focusable element.",
       required: true,
       value: "ReactNode",
     },
     {
       name: "content",
-      description: "Content to display in the tooltip.",
+      description: "Content displayed in the scrollable body of the tooltip.",
       required: true,
       value: "ReactNode",
     },
     {
       name: "title",
-      description: "Optional title displayed above the content.",
+      description:
+        "Optional title displayed above the content. Plain text only.",
       required: false,
       value: "string",
     },
     {
       name: "footer",
       description:
-        "Optional footer displayed below the scrollable content. Stays fixed when content scrolls.",
+        "Optional footer displayed below the content. Stays fixed when the content scrolls.",
       required: false,
       value: "ReactNode",
-    },
-    {
-      name: "theme",
-      description: "Visual theme of the tooltip.",
-      required: false,
-      value: "'default' | 'themed'",
-      defaultValue: "'default'",
     },
     {
       name: "side",
@@ -368,22 +286,22 @@ The provider component that manages tooltips. Typically wrapped around the entir
     {
       name: "sideOffset",
       description:
-        "Distance in pixels from the trigger element. Automatically increases to 6px when arrow is hidden.",
+        "Distance in pixels from the trigger. When omitted it defaults to 2, or 6 when the arrow is hidden.",
       required: false,
       value: "number",
       defaultValue: "2 (6 when hideArrow is true)",
     },
     {
       name: "delay",
-      description: "Delay in ms before showing the tooltip.",
+      description: "Delay in ms before showing the tooltip on hover.",
       required: false,
       value: "number",
-      defaultValue: "500",
+      defaultValue: "400",
     },
     {
       name: "open",
       description:
-        "Controlled open state. Useful for testing or controlled tooltips.",
+        "Controls the open state. Useful for testing or forced-open tooltips.",
       required: false,
       value: "boolean",
     },
@@ -395,3 +313,9 @@ The provider component that manages tooltips. Typically wrapped around the entir
     },
   ]}
 />
+
+</TabItem>
+
+</Tabs>
+
+</div>

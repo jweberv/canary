@@ -66,6 +66,20 @@ describe('Text', () => {
       expect(text).toBeInTheDocument()
     })
 
+    test('should render body-code-strong variant', () => {
+      const { container } = renderComponent({ variant: 'body-code-strong' })
+
+      const text = container.querySelector('.font-body-code-strong')
+      expect(text).toBeInTheDocument()
+    })
+
+    test('should render caption-code-strong variant', () => {
+      const { container } = renderComponent({ variant: 'caption-code-strong' })
+
+      const text = container.querySelector('.font-caption-code-strong')
+      expect(text).toBeInTheDocument()
+    })
+
     test('should render caption-normal variant', () => {
       const { container } = renderComponent({ variant: 'caption-normal' })
 
@@ -372,11 +386,10 @@ describe('Text', () => {
         'body-strong',
         'body-single-line-strong',
         'body-code',
+        'body-code-strong',
         'caption-normal',
-        'caption-light',
         'caption-strong',
-        'caption-single-line-normal',
-        'caption-single-line-light'
+        'caption-single-line-normal'
       ] as const
 
       variants.forEach(variant => {
@@ -600,13 +613,7 @@ describe('Text', () => {
     })
 
     test('should render caption variants as span elements', () => {
-      const captionVariants = [
-        'caption-normal',
-        'caption-light',
-        'caption-strong',
-        'caption-single-line-normal',
-        'caption-single-line-light'
-      ] as const
+      const captionVariants = ['caption-normal', 'caption-strong', 'caption-single-line-normal'] as const
 
       captionVariants.forEach(variant => {
         const { container, unmount } = render(<Text variant={variant}>Caption</Text>)

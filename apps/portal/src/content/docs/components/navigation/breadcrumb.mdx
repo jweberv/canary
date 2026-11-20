@@ -1,20 +1,33 @@
 ---
 title: Breadcrumb
 description: Breadcrumb component
-beta: true
 ---
+
+import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
+
+<PageTabsToc />
+
+<div id="page-level-tabs">
+
+<Tabs>
+
+<TabItem label="Overview">
 
 A breadcrumbs is a list of links that help visualize the location of a page within the hierarchical structure of
 a site, it allows navigation up to any of the ancestors.
 
-import { DocsPage } from "@/components/docs-page";
+## Playground
+
+<DocsPage.BreadcrumbPlayground client:only />
 
 <DocsPage.ComponentExample
   client:only
   code={`<Breadcrumb.Root>
   <Breadcrumb.List>
     <Breadcrumb.Item>
-      <Breadcrumb.RootInteractive>Harness</Breadcrumb.RootInteractive>
+      <Breadcrumb.RootInteractive variant="plain">Harness</Breadcrumb.RootInteractive>
     </Breadcrumb.Item>
     <Breadcrumb.Separator />
     <Breadcrumb.Item>
@@ -26,7 +39,7 @@ import { DocsPage } from "@/components/docs-page";
 </Breadcrumb.Root>`}
 />
 
-## Overview
+## Variations
 
 <DocsPage.ComponentExample
   client:only
@@ -79,7 +92,9 @@ import { DocsPage } from "@/components/docs-page";
   <Breadcrumb.Root>
     <Breadcrumb.List>
       <Breadcrumb.Item>
-        <Breadcrumb.RootInteractive>Organization</Breadcrumb.RootInteractive>
+        <Breadcrumb.RootInteractive variant="plain">
+          Organization
+        </Breadcrumb.RootInteractive>
       </Breadcrumb.Item>
       <Breadcrumb.Separator />
       <Breadcrumb.Item>
@@ -142,7 +157,9 @@ import { DocsPage } from "@/components/docs-page";
     <Breadcrumb.Root size="sm">
       <Breadcrumb.List>
         <Breadcrumb.Item>
-          <Breadcrumb.RootInteractive>Harness</Breadcrumb.RootInteractive>
+          <Breadcrumb.RootInteractive variant="plain">
+            Harness
+          </Breadcrumb.RootInteractive>
         </Breadcrumb.Item>
         <Breadcrumb.Separator />
         <Breadcrumb.Item>
@@ -164,7 +181,7 @@ import { DocsPage } from "@/components/docs-page";
       <Breadcrumb.Root size="xs">
         <Breadcrumb.List>
           <Breadcrumb.Item>
-            <Breadcrumb.RootInteractive size="xs">Harness</Breadcrumb.RootInteractive>
+            <Breadcrumb.RootInteractive size="xs" variant="plain">Harness</Breadcrumb.RootInteractive>
           </Breadcrumb.Item>
           <Breadcrumb.Separator />
           <Breadcrumb.Item>
@@ -179,7 +196,7 @@ import { DocsPage } from "@/components/docs-page";
 </div>`}
 />
 
-## Usage
+## Installation
 
 ```typescript jsx
 import { Breadcrumb } from '@harnessio/ui/components'
@@ -203,29 +220,6 @@ return (
     </Breadcrumb.List>
   </Breadcrumb.Root>
 )
-```
-
-## Anatomy
-
-All parts of the `Breadcrumb` can be imported and composed as required.
-
-```typescript jsx
-<Breadcrumb.Root>
-  <Breadcrumb.List>
-    <Breadcrumb.Item>
-      <Breadcrumb.RootInteractive />  {/* Interactive root with avatar */}
-    </Breadcrumb.Item>
-    <Breadcrumb.Separator />
-    <Breadcrumb.Item>
-      <Breadcrumb.Link />        {/* Clickable link */}
-    </Breadcrumb.Item>
-    <Breadcrumb.Separator />
-    <Breadcrumb.Ellipsis />      {/* Truncation indicator with dropdown */}
-    <Breadcrumb.Separator />
-    <Breadcrumb.Page />          {/* Current page (non-clickable) */}
-  </Breadcrumb.List>
-  <Breadcrumb.Copy />            {/* Copy path button (outside List) */}
-</Breadcrumb.Root>
 ```
 
 ## Components
@@ -333,6 +327,7 @@ The `Ellipsis` component displays a truncation indicator. Click to show a dropdo
     </Breadcrumb.Item>
     <Breadcrumb.Separator />
     <Breadcrumb.Ellipsis
+      showTooltip
       items={[
         { label: 'Hidden 1', href: '#' },
         { label: 'Hidden 2', href: '#' },
@@ -381,7 +376,7 @@ The `RootInteractive` component displays an interactive root element with an ava
     <Breadcrumb.Root>
       <Breadcrumb.List>
         <Breadcrumb.Item>
-          <Breadcrumb.RootInteractive isRootOnly>Account</Breadcrumb.RootInteractive>
+          <Breadcrumb.RootInteractive variant="plain" isRootOnly>Account</Breadcrumb.RootInteractive>
         </Breadcrumb.Item>
       </Breadcrumb.List>
     </Breadcrumb.Root>
@@ -391,7 +386,7 @@ The `RootInteractive` component displays an interactive root element with an ava
     <Breadcrumb.Root>
       <Breadcrumb.List>
         <Breadcrumb.Item>
-          <Breadcrumb.RootInteractive>Organization</Breadcrumb.RootInteractive>
+          <Breadcrumb.RootInteractive variant="plain">Organization</Breadcrumb.RootInteractive>
         </Breadcrumb.Item>
         <Breadcrumb.Separator />
         <Breadcrumb.Item>
@@ -407,7 +402,7 @@ The `RootInteractive` component displays an interactive root element with an ava
     <Breadcrumb.Root>
       <Breadcrumb.List>
         <Breadcrumb.Item>
-          <Breadcrumb.RootInteractive avatar={{ src: "/avatar.png" }}>John Doe</Breadcrumb.RootInteractive>
+          <Breadcrumb.RootInteractive variant="plain" avatar={{ src: "/avatar.png" }}>John Doe</Breadcrumb.RootInteractive>
         </Breadcrumb.Item>
         <Breadcrumb.Separator />
         <Breadcrumb.Item>
@@ -421,76 +416,229 @@ The `RootInteractive` component displays an interactive root element with an ava
 </div>`}
 />
 
-## API Reference
+### Inline expand
+
+Pass `expandInline` to `Ellipsis` to reveal the hidden items in place, as regular links, instead of opening a dropdown. Each item can carry an `icon`. For an Account > Organization > Project path, put account and organization in the `items` so only the project shows by default; each link goes to that level's home.
+
+<DocsPage.ComponentExample
+  client:only
+  hideCode
+  code={`<Breadcrumb.Root>
+  <Breadcrumb.List>
+    <Breadcrumb.Ellipsis
+      expandInline
+      showTooltip
+      items={[
+        { label: "Account ID", href: "#", icon: "globe" },
+        { label: "Organization", href: "#", icon: "organizations" },
+      ]}
+    />
+    <Breadcrumb.Separator />
+    <Breadcrumb.Item>
+      <Breadcrumb.Link href="#" prefixIcon="folder">Canary</Breadcrumb.Link>
+    </Breadcrumb.Item>
+    <Breadcrumb.Separator />
+    <Breadcrumb.Page>Settings</Breadcrumb.Page>
+  </Breadcrumb.List>
+</Breadcrumb.Root>`}
+/>
+
+</TabItem>
+
+<TabItem label="Usage">
+
+## Anatomy
+
+All parts of the `Breadcrumb` can be imported and composed as required.
+
+```typescript jsx
+<Breadcrumb.Root>
+  <Breadcrumb.List>
+    <Breadcrumb.Item>
+      <Breadcrumb.RootInteractive />  {/* Interactive root with avatar */}
+    </Breadcrumb.Item>
+    <Breadcrumb.Separator />
+    <Breadcrumb.Item>
+      <Breadcrumb.Link />        {/* Clickable link */}
+    </Breadcrumb.Item>
+    <Breadcrumb.Separator />
+    <Breadcrumb.Ellipsis />      {/* Truncation indicator with dropdown */}
+    <Breadcrumb.Separator />
+    <Breadcrumb.Page />          {/* Current page (non-clickable) */}
+  </Breadcrumb.List>
+  <Breadcrumb.Copy />            {/* Copy path button (outside List) */}
+</Breadcrumb.Root>
+```
+
+- **Root** — a `<nav aria-label="breadcrumb">` landmark that wraps the trail. `size` (`sm` or `xs`) scales the whole breadcrumb.
+- **List** — an ordered list (`<ol>`) holding the steps in order.
+- **Item** — a list item (`<li>`); it can carry a `prefixIcon` and holds a `Link`, `RootInteractive`, or plain content.
+- **Link** — a clickable `<a>` for an ancestor; supports a `prefixIcon`.
+- **Separator** — the divider between steps (a `/` by default); it's decorative and hidden from assistive tech.
+- **Ellipsis** — a truncation control that collapses middle steps into a dropdown of hidden `items`.
+- **Page** — the current location; non-clickable and marked as the current step.
+- **Copy** — an optional copy-path button, placed inside `Root` but outside `List`.
+- **RootInteractive** — a button-styled root with an avatar and a chevron, for header-style navigation.
+
+## Best practices
+
+{/* TODO: editorial — please review against product guidance. */}
+
+**Do**
+
+- Use a breadcrumb to show where the current page sits in the hierarchy and to let people jump back up to any ancestor.
+- Keep the last step as the current page (`Breadcrumb.Page`) and every step before it as a `Breadcrumb.Link`.
+- Collapse long trails with `Breadcrumb.Ellipsis` rather than letting the row wrap or overflow — keep the first and last steps visible.
+- Match the `size` to the surface: `sm` for standard bars, `xs` for dense headers.
+
+**Don't**
+
+- Don't use a breadcrumb as the primary navigation for a flat site with no real hierarchy.
+- Don't make the current page a link — it's where the user already is.
+- Don't rely on the separator or a `prefixIcon` to carry meaning; the step's text label is what matters.
+
+## Content
+
+{/* TODO: editorial — please review against product guidance. */}
+
+- Label each step with the destination's real name — the page or section title — in sentence case.
+- Keep labels short so the trail stays on one line; truncate the middle with an ellipsis before you shorten meaningful names.
+- Use `prefixIcon` sparingly and only when the icon reinforces the label (a folder, a repo), not as decoration.
+
+## Accessibility
+
+`Breadcrumb` ships proper landmark and list semantics: `Root` is a `<nav aria-label="breadcrumb">`, `List` is an ordered list, and each `Item` is a list item — so assistive tech announces it as breadcrumb navigation with a numbered trail.
+
+### Keyboard
+
+- Each `Link` is a native `<a>` and a tab stop, activated with **Enter**.
+- The `Ellipsis` is a button that opens a dropdown; open it with **Enter**/**Space**, then move through the hidden items with the arrow keys.
+- `Copy` and `RootInteractive` are native `<button>`s — tab stops activated with **Enter**/**Space**.
+- The current `Page` is not focusable, since there's nowhere to navigate.
+
+### Labeling
+
+- The current page is marked `aria-current="page"`, so screen readers announce it as the current location.
+- Separators are `role="presentation"` and `aria-hidden`, so the `/` isn't read out between steps.
+- `prefixIcon`s are decorative — the item's text label carries the meaning.
+
+### Focus & states
+
+- Links and buttons show the standard keyboard focus ring (`:focus-visible`) via the `--cn-focus` token.
+- The current `Page` renders as an `aria-disabled` link, so it's skipped in the tab order.
+
+### Known limitations
+
+- **Label the `Ellipsis` button.** The default dropdown `…` has no accessible name, so pass `showTooltip` (labels it "Show full path" and adds a tooltip) or your own `aria-label`. The `expandInline` variant is labelled automatically; add `showTooltip` for the tooltip too. `showTooltip` needs a `TooltipProvider` ancestor.
+- **The current page is a disabled link, not plain text.** `Page` renders `role="link"` with `aria-disabled="true"`; it's announced as a link you can't follow. That's intentional, but don't place interactive content inside it.
+- **`RootInteractive` shows a chevron but doesn't provide the menu.** It's a styled `<button>` with an avatar and an up/down chevron that implies a dropdown; wiring the actual menu (and the matching `aria-haspopup`/`aria-expanded`) is up to you. Its avatar icon is decorative, so give the button clear text.
+
+</TabItem>
+
+<TabItem label="Properties">
+
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
+
+## Properties
 
 <DocsPage.PropsTable
   props={[
     {
       name: "Root.size",
       description: "Size of the breadcrumb",
-      defaultValue: "sm",
-      type: "'sm' | 'xs'",
+      defaultValue: "'sm'",
+      value: "'sm' | 'xs'",
     },
     {
       name: "Item.prefixIcon",
       description: "Icon to display before content",
-      type: "IconV2NamesType",
+      value: "IconV2NamesType",
     },
-    { name: "Link.href", description: "URL to navigate to", type: "string" },
+    { name: "Link.href", description: "URL to navigate to", value: "string" },
     {
       name: "Link.prefixIcon",
       description: "Icon to display before content",
-      type: "IconV2NamesType",
+      value: "IconV2NamesType",
     },
     {
       name: "Link.asChild",
       description: "Render as child element",
       defaultValue: "false",
-      type: "boolean",
+      value: "boolean",
     },
     {
       name: "Page.prefixIcon",
       description: "Icon to display before content",
-      type: "IconV2NamesType",
+      value: "IconV2NamesType",
     },
     {
       name: "Separator.children",
       description: "Custom separator content",
       defaultValue: "/",
+      value: "ReactNode",
     },
     {
       name: "Ellipsis.items",
       description: "Hidden items to show in dropdown",
       required: true,
-      type: "BreadcrumbEllipsisItem[]",
+      value: "BreadcrumbEllipsisItem[]",
     },
     {
       name: "Ellipsis.onItemSelect",
       description: "Callback when item is selected",
-      type: "(item) => void",
+      value: "(item: BreadcrumbEllipsisItem) => void",
     },
     {
       name: "Copy.name",
       description: "Text to copy to clipboard",
       required: true,
-      type: "string",
+      value: "string",
     },
     {
       name: "RootInteractive.size",
       description: "Size (sm uses lg avatar, xs uses sm)",
-      defaultValue: "sm",
-      type: "'sm' | 'xs'",
+      defaultValue: "'sm'",
+      value: "'sm' | 'xs'",
     },
     {
       name: "RootInteractive.isRootOnly",
-      description: "Show account icon when true, organizations when false",
+      description:
+        "Root-only icon when true (account by default, globe with variant=plain), organizations when false",
       defaultValue: "false",
-      type: "boolean",
+      value: "boolean",
+    },
+    {
+      name: "RootInteractive.variant",
+      description:
+        "Opt-in 'plain' shows a bare icon (no avatar circle), globe for root-only, and a square avatar when src or name is given. 'default' keeps the rounded avatar",
+      defaultValue: "'default'",
+      value: "'default' | 'plain'",
     },
     {
       name: "RootInteractive.avatar",
-      description: "Avatar props (src, icon, name)",
-      type: "AvatarProps",
+      description:
+        "Avatar props (src, icon, name). With variant=plain and src or name, renders a square avatar",
+      value: "Omit<AvatarProps, 'size' | 'rounded'>",
+    },
+    {
+      name: "Ellipsis.showTooltip",
+      description:
+        "Label the ellipsis button 'Show full path' (aria-label and tooltip). Requires a TooltipProvider ancestor. With expandInline the button is always labelled; this adds the tooltip",
+      defaultValue: "false",
+      value: "boolean",
+    },
+    {
+      name: "Ellipsis.expandInline",
+      description:
+        "Expand hidden items in place as breadcrumb links instead of opening a dropdown. Focus moves to the first revealed link. Collapses again if the hidden items change. Once expanded it renders links instead of the button, so a ref on it is null",
+      defaultValue: "false",
+      value: "boolean",
     },
   ]}
 />
+
+</TabItem>
+
+</Tabs>
+
+</div>

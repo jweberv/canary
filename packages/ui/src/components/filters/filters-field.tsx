@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { Checkbox } from '@components/checkbox'
 import { Label } from '@components/form-primitives'
 import { MultiSelectOption } from '@components/multi-select'
 import { cn } from '@utils/cn'
 
-import FilterBoxWrapper from './filter-box-wrapper'
+import { DateRangeV2Content } from '../date-range-v2/date-range-v2'
+import type { DateRangeV2Value } from '../date-range-v2/types'
+import FilterBoxWrapper, { type FilterFieldTriggerVariant } from './filter-box-wrapper'
 import Calendar from './filters-bar/actions/variants/calendar-field'
 import { MultiSelectFilter } from './filters-bar/actions/variants/checkbox'
 import Combobox, { ComboBoxOptions } from './filters-bar/actions/variants/combo-box'
@@ -35,6 +37,11 @@ export interface FiltersFieldProps<
   onOpenChange?: (open: boolean) => void
   onChange: (selectedValues: V) => void
   value?: V
+  /**
+   * Trigger button look. Defaults to `secondary`.
+   * Pass `outline` for standalone filters (no filter group).
+   */
+  variant?: FilterFieldTriggerVariant
 }
 
 interface FilterFieldProps<T extends string, V extends FilterValueTypes, CustomValue = Record<string, unknown>> {
@@ -75,10 +82,33 @@ const FilterFieldInternal = <T extends string, V extends FilterValueTypes, Custo
           filter={dateRangeFilter}
           presets={filterOption.filterFieldConfig?.presets}
           showCustomRange={filterOption.filterFieldConfig?.showCustomRange}
+          calendarProps={filterOption.filterFieldConfig?.calendarProps}
+          calendarClassNames={filterOption.filterFieldConfig?.calendarClassNames}
           onUpdateFilter={values => {
             onUpdateFilter(values as V)
             values && setIsOpen(false)
           }}
+        />
+      )
+    }
+    case FilterFieldTypes.DateRangeV2: {
+      const dateRangeV2Filter = filter as FilterField<DateRangeV2Value>
+      return (
+        <DateRangeV2Content
+          value={dateRangeV2Filter.value}
+          config={filterOption.filterFieldConfig}
+          onFillBounds={values => {
+            onUpdateFilter(values as V)
+          }}
+          onApply={values => {
+            onUpdateFilter(values as V)
+            setIsOpen(false)
+          }}
+          onClear={() => {
+            onUpdateFilter(undefined as V)
+            setIsOpen(false)
+          }}
+          onCancel={() => setIsOpen(false)}
         />
       )
     }
@@ -128,7 +158,7 @@ const FilterFieldInternal = <T extends string, V extends FilterValueTypes, Custo
       return (
         <Label
           optional
-          className="rounded-cn-3 bg-cn-gray-secondary border-cn-gray-outline cursor-pointer border px-cn-md py-cn-xs [&>.cn-label-text]:flex [&>.cn-label-text]:items-center [&>.cn-label-text]:gap-x-cn-2xs"
+          className="cursor-pointer rounded-cn-3 border border-cn-gray-outline bg-cn-gray-secondary px-cn-md py-cn-xs [&>.cn-label-text]:flex [&>.cn-label-text]:items-center [&>.cn-label-text]:gap-x-cn-2xs"
           htmlFor={checkboxId}
         >
           <Checkbox
@@ -157,6 +187,17 @@ const FilterFieldInternal = <T extends string, V extends FilterValueTypes, Custo
   }
 }
 
+const resetFilterOptionSearch = <CustomValue,>(filterOption: FilterOptionConfig<string, CustomValue>) => {
+  if (!('filterFieldConfig' in filterOption) || !filterOption.filterFieldConfig) {
+    return
+  }
+
+  const { filterFieldConfig } = filterOption
+  if ('onSearch' in filterFieldConfig && filterFieldConfig.onSearch) {
+    filterFieldConfig.onSearch('')
+  }
+}
+
 const FiltersField = <T extends string, V extends FilterValueTypes, CustomValue = Record<string, unknown>>({
   filterOption,
   removeFilter,
@@ -164,13 +205,33 @@ const FiltersField = <T extends string, V extends FilterValueTypes, CustomValue 
   dropdownContentClassName,
   onOpenChange,
   onChange,
-  value
+  value,
+  variant
 }: FiltersFieldProps<T, V, CustomValue>) => {
   const activeFilterOption = {
     type: filterOption.value,
     value
   }
   const [isOpen, setIsOpen] = useState(shouldOpenFilter)
+
+  const resetAsyncFilterSearch = useCallback(() => {
+    resetFilterOptionSearch(filterOption)
+  }, [filterOption])
+
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        resetAsyncFilterSearch()
+      }
+      onOpenChange?.(open)
+    },
+    [onOpenChange, resetAsyncFilterSearch]
+  )
+
+  const handleRemoveFilter = useCallback(() => {
+    resetAsyncFilterSearch()
+    removeFilter()
+  }, [removeFilter, resetAsyncFilterSearch])
 
   const onFilterValueChange = (selectedValues: V) => {
     onChange(selectedValues)
@@ -194,16 +255,21 @@ const FiltersField = <T extends string, V extends FilterValueTypes, CustomValue 
       contentClassName={cn(
         filterOption.type === FilterFieldTypes.Calendar ? 'w-[250px]' : '',
         filterOption.type === FilterFieldTypes.DateRange ? 'w-auto min-w-[400px] max-w-none' : '',
+        filterOption.type === FilterFieldTypes.DateRangeV2
+          ? 'w-auto min-w-[400px] max-w-none cn-dropdown-menu-available-height'
+          : '',
+        filterOption.type === FilterFieldTypes.MultiTag ? 'cn-dropdown-menu-overflow-visible' : '',
         dropdownContentClassName
       )}
-      handleRemoveFilter={() => removeFilter()}
+      handleRemoveFilter={handleRemoveFilter}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={handleOpenChange}
       defaultOpen={shouldOpenFilter}
       filterLabel={filterOption.label}
       valueLabel={valueLabel}
       tooltipContent={valueLabel}
+      variant={variant}
     >
       <FilterFieldInternal<T, V, CustomValue>
         filter={activeFilterOption}

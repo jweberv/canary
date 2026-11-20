@@ -113,8 +113,9 @@ const AccordionItem = forwardRef<ElementRef<typeof AccordionPrimitive.Item>, Acc
     const { variant, cardSize } = useContext(AccordionContext)
 
     if (variant === 'card') {
+      // Interactive cards disable text selection. Accordion content needs to stay selectable.
       return (
-        <Card.Root size={cardSize} className="w-full" wrapperClassname="!p-0">
+        <Card.Root size={cardSize} interactive={false} className="w-full" wrapperClassname="!p-0">
           <AccordionPrimitive.Item ref={ref} className="w-full" {...props} />
         </Card.Root>
       )
@@ -138,7 +139,7 @@ const AccordionTrigger = forwardRef<ElementRef<typeof AccordionPrimitive.Trigger
   ({ className, children, suffix, prefix, indicatorProps, headerClassName, clickable = true, ...props }, ref) => {
     const { indicatorPosition, variant, cardSize } = useContext(AccordionContext)
 
-    const Indicator = () => (
+    const indicator = (
       <IconV2
         name="nav-arrow-down"
         size="xs"
@@ -154,13 +155,13 @@ const AccordionTrigger = forwardRef<ElementRef<typeof AccordionPrimitive.Trigger
         <div
           className={cn(accordionTriggerVariants({ cardSize: variant === 'card' ? cardSize : 'default' }), className)}
         >
-          {indicatorPosition === 'left' && <Indicator />}
+          {indicatorPosition === 'left' && indicator}
 
           {!!prefix && <span className="cn-accordion-trigger-prefix">{prefix}</span>}
           <span className="cn-accordion-trigger-text">{children}</span>
           {!!suffix && <span className="cn-accordion-trigger-suffix">{suffix}</span>}
 
-          {indicatorPosition === 'right' && <Indicator />}
+          {indicatorPosition === 'right' && indicator}
         </div>
       </AccordionPrimitive.Header>
     )

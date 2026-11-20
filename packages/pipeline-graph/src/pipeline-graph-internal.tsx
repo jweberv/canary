@@ -1,17 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-
-import cn from 'classnames'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { useCanvasContext } from './context/canvas-provider'
 import { useContainerNodeContext } from './context/container-node-provider'
 import { useGraphContext } from './context/graph-provider'
+import { drawEdges } from './render/draw-edges'
 import { renderNode } from './render/render-node'
-import { clear, CreateSVGPathType, getPortsConnectionPath } from './render/render-svg-lines'
+import { CreateSVGPathType } from './render/render-svg-lines'
 import { LayoutConfig } from './types/layout'
 import { AnyContainerNodeType } from './types/nodes'
 import { AnyNodeInternal } from './types/nodes-internal'
 import { GetPortSvgFuncType } from './types/port-types'
-import { connectPorts } from './utils/connects-utils'
 import { getNegativeTopAdjustment } from './utils/graph-position-utils'
 import { getFlexAlign } from './utils/layout-utils'
 import { addPaths } from './utils/path-utils'
@@ -36,7 +34,8 @@ export interface PipelineGraphInternalProps {
 }
 
 export function PipelineGraphInternal(props: PipelineGraphInternalProps) {
-  const { initialized, nodes: nodesBank, rerenderConnections, setInitialized, isCollapsed } = useGraphContext()
+  const { initialized, nodes: nodesBank, rerenderConnections, setInitialized, isCollapsed, setShowSvg, pendingRevealRef } =
+    useGraphContext()
   const { setCanvasTransform, canvasTransformRef, config: canvasConfig, setTargetEl } = useCanvasContext()
   const { serialContainerConfig } = useContainerNodeContext()
 
@@ -77,32 +76,19 @@ export function PipelineGraphInternal(props: PipelineGraphInternalProps) {
       const nodesContainerEl = nodesContainerRef.current
       const svgEl = svgRef.current
 
-      clear(svgGroupRef.current)
-
-      // create connections
-      const connections = connectPorts(dataInternal, { left: 'start', right: 'end' }, false)
-
       // NOTE: required to get ports coordinates from DOM
       rootContainerEl.style.transform = 'scale(1)'
 
       // draw lines
-      if (svgGroupRef.current) {
-        const allPaths: { level1: string[]; level2: string[] } = { level1: [], level2: [] }
-        connections.map(portPair => {
-          const levelPaths = getPortsConnectionPath({
-            parentEl: rootContainerEl,
-            pipelineGraphRoot: rootContainerEl,
-            connection: portPair,
-            customCreateSVGPath,
-            edgesConfig,
-            isCollapsed,
-            getPortSvg: getPort
-          })
-          allPaths.level1.push(levelPaths.level1)
-          allPaths.level2.push(levelPaths.level2)
-        })
-        svgGroupRef.current.innerHTML = allPaths.level1.join('') + allPaths.level2.join('')
-      }
+      drawEdges({
+        rootEl: rootContainerEl,
+        svgGroupEl: svgGroupRef.current,
+        data: dataInternal,
+        edgesConfig,
+        getPort,
+        customCreateSVGPath,
+        isCollapsed
+      })
 
       // reset transform
       rootContainerEl.style.transform = ''
@@ -184,6 +170,71 @@ export function PipelineGraphInternal(props: PipelineGraphInternalProps) {
     }
   }, [dataInternal, rerenderConnections, initialized, graphSizeRef])
 
+  // Redraw the edges from the current DOM port positions, independent of any animation. Mirrors the
+  // draw step of the layout effect (scale to 1 so getBoundingClientRect is unscaled, draw, restore).
+  const redrawEdges = useCallback(() => {
+    const rootContainerEl = rootContainerRef.current
+    const svgGroupEl = svgGroupRef.current
+    if (!rootContainerEl || !svgGroupEl) return
+
+    rootContainerEl.style.transform = 'scale(1)'
+    drawEdges({
+      rootEl: rootContainerEl,
+      svgGroupEl,
+      data: dataInternalRef.current,
+      edgesConfig,
+      getPort,
+      customCreateSVGPath,
+      isCollapsed
+    })
+    rootContainerEl.style.transform = ''
+  }, [edgesConfig, getPort, customCreateSVGPath, isCollapsed])
+
+  // Safety net for edge rendering. Edge visibility (`showSvg`) and the post-animation redraw are
+  // otherwise driven solely by framer-motion's `onAnimationComplete`, which does not reliably fire for
+  // no-op, interrupted, or mid-flight-unmounted animations (e.g. a container remounted by an index
+  // shift). When it is skipped the SVG stays hidden (no lines) or keeps stale port coordinates (lines
+  // at the wrong position). A ResizeObserver on the nodes container redraws and re-reveals once the
+  // layout settles, regardless of whether the animation callback fired — the debounce resets on every
+  // frame of a running animation, so the redraw runs only after sizes stop changing.
+  useEffect(() => {
+    const el = nodesContainerRef.current
+    if (!el) return
+
+    // Reveal the edges from the settled DOM, unless a user-initiated expand is still pending its
+    // animation — that would paint edges during the async gap (expanded node whose children haven't
+    // loaded yet), showing lines before the nodes animate in. `pendingRevealRef` is a shared counter;
+    // > 0 means at least one container is still waiting for its expand to animate in.
+    const settleReveal = () => {
+      redrawEdges()
+      if (pendingRevealRef.current > 0) return
+      setShowSvg(true)
+    }
+
+    // No ResizeObserver (jsdom / older environments). We can't detect when the layout settles, and the
+    // first-load layout effect never reveals on its own, so the SVG would stay hidden forever. Reveal
+    // once on a short fallback timer instead, mirroring the settle path (redraw, then reveal unless an
+    // expand is pending). Every browser the product targets has ResizeObserver, so this is a safety net.
+    if (typeof ResizeObserver === 'undefined') {
+      const fallback = setTimeout(settleReveal, 150)
+      return () => clearTimeout(fallback)
+    }
+
+    let settleTimer: ReturnType<typeof setTimeout> | undefined
+    const observer = new ResizeObserver(() => {
+      // The debounce resets on every frame of a running animation, so the redraw + reveal runs only
+      // after sizes stop changing.
+      clearTimeout(settleTimer)
+      settleTimer = setTimeout(settleReveal, 150)
+    })
+    observer.observe(el)
+
+    return () => {
+      clearTimeout(settleTimer)
+      observer.disconnect()
+    }
+  }, [redrawEdges, setShowSvg])
+
   useEffect(() => {
     if (rootContainerRef.current) setTargetEl(rootContainerRef.current)
   }, [rootContainerRef])
@@ -205,10 +256,16 @@ export function PipelineGraphInternal(props: PipelineGraphInternalProps) {
           ref={svgRef}
           width="1"
           height="1"
-          className={cn('PipelineGraph-Svg', {
-            'opacity-100 transition-opacity duration-150': showSvg,
-            'opacity-0': !showSvg
-          })}
+          className="PipelineGraph-Svg"
+          // Opacity is driven inline, NOT via Tailwind `opacity-0`/`opacity-100` utilities: those are
+          // not shipped in the library's own CSS and are not reliably generated by the consuming app's
+          // Tailwind (it doesn't scan this package's built output), so the classes had no backing rule
+          // and the SVG stayed visible regardless of showSvg. Fade in on reveal; hide instantly so
+          // edges never linger before the nodes have settled.
+          style={{
+            opacity: showSvg ? 1 : 0,
+            transition: showSvg ? 'opacity 150ms' : undefined
+          }}
         >
           <g ref={svgGroupRef} className="PipelineGraph-SvgGroup"></g>
         </svg>

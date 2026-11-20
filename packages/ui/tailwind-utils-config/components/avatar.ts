@@ -12,7 +12,7 @@ function createAvatarSizeStyles() {
         width: `var(--cn-avatar-size-${size})`,
         fontSize: `var(--cn-font-size-0)`,
         letterSpacing: `var(--cn-tracking-wide)`,
-        fontWeight: `var(--cn-font-weight-default-normal-600)`
+        fontWeight: `var(--cn-font-weight-default-normal-500)`
       }
     } else {
       styles[`&:where(.cn-avatar-${size})`] = {

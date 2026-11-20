@@ -17,6 +17,12 @@ export const backgroundColor = {
   '.bg-cn-diff-danger': {
     backgroundColor: 'var(--cn-comp-diff-del-content)'
   },
+  '.bg-cn-diff-success-strong': {
+    backgroundColor: 'var(--cn-comp-diff-add-content-highlight)'
+  },
+  '.bg-cn-diff-danger-strong': {
+    backgroundColor: 'var(--cn-comp-diff-del-content-highlight)'
+  },
   '.bg-cn-graph-card-canvas-1': {
     backgroundColor: 'var(--cn-comp-pipeline-card-canvas-1-bg)'
   },
@@ -27,11 +33,13 @@ export const backgroundColor = {
     backgroundImage: 'var(--cn-comp-pipeline-card-bg)'
   },
   '.bg-cn-graph-bg-gradient': {
-    backgroundImage:
-      'linear-gradient(90deg, var(--cn-comp-pipeline-bg) 50%, transparent 50%), linear-gradient(var(--cn-comp-pipeline-bg) 50%, transparent 50%), linear-gradient(90deg, transparent 25%, var(--cn-comp-pipeline-bg) 25%, var(--cn-comp-pipeline-bg) 75%, transparent 75%), linear-gradient(transparent 25%, var(--cn-comp-pipeline-bg) 25%, var(--cn-comp-pipeline-bg) 75%, transparent 75%)',
-    backgroundSize: '8px 8px',
+    backgroundImage: 'conic-gradient(at 2px 2px, transparent 0deg 270deg, var(--cn-comp-pipeline-dotes) 270deg 360deg)',
+    backgroundSize: '12px 12px',
     backgroundRepeat: 'repeat',
     opacity: '1',
-    backgroundColor: 'var(--cn-comp-pipeline-dotes)'
+    backgroundColor: 'var(--cn-comp-pipeline-canvas-bg)'
+  },
+  '.bg-cn-pipeline': {
+    backgroundColor: 'var(--cn-comp-pipeline-bg)'
   }
 }

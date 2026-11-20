@@ -5,7 +5,7 @@ import { Alert, Button, ButtonLayout, Dialog, FormInput, FormWrapper, Radio } fr
 import { useTranslation } from '@harnessio/ui/context'
 import { identifierSchema } from '@harnessio/ui/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 interface SavedFilterError {
   errMessage: string
@@ -79,11 +79,11 @@ function SaveFiltersDialog({ onSubmit }: SaveFiltersDialogProps) {
       </Dialog.Trigger>
       <Dialog.Content>
         <Dialog.Header>
-          <Dialog.Title>{t('component:filter.saveFilter', 'Save Filter')}</Dialog.Title>
+          <Dialog.Title>{t('component:filter.saveFilter', 'Save filter')}</Dialog.Title>
         </Dialog.Header>
         <Dialog.Body>
           <FormWrapper id="save-filters" {...formMethods} onSubmit={handleSubmit(onFormSubmit)}>
-            <FormInput.Text {...register('identifier')} autoFocus label="Filter Id" />
+            <FormInput.Text {...register('identifier')} autoFocus label="Filter ID" />
             <FormInput.Radio {...register('visibility')} label="Visibility">
               <Radio.Item label="Everyone" value="EveryOne" />
               <Radio.Item label="Only Me" value="OnlyCreator" />

@@ -12,7 +12,8 @@ import {
   StudioCardHeaderProps,
   StudioCardMessageProps,
   StudioCardRootProps,
-  StudioCardStatusProps
+  StudioCardStatusProps,
+  StudioCardTagProps
 } from './studio-card-types'
 
 /**
@@ -91,7 +92,7 @@ function Header({ icon, title, actions }: StudioCardHeaderProps): JSX.Element {
   return (
     <div className="cn-studio-card-header">
       {headerIcon}
-      <Text color="foreground-1" className="cn-studio-card-header-title truncate" variant="body-strong">
+      <Text className="flex-1" color="foreground-1" title={title} variant="body-strong" truncate>
         {title}
       </Text>
 
@@ -220,18 +221,19 @@ function ExpandButton({
           {variant === 'default' && (icon ?? <IconV2 name="harness-plugins" size="lg" />)}
           <Text
             color="inherit"
-            variant={variant === 'minimal' ? 'caption-single-line-code' : 'body-strong'}
-            className="truncate"
+            variant={variant === 'minimal' ? 'caption-code' : 'body-strong'}
+            className="min-w-0 flex-1"
+            truncate
           >
             {label}
           </Text>
-          {variant === 'minimal' && <IconV2 name="expand" size="xs" />}
+          {variant === 'minimal' && <IconV2 name="expand" size="xs" className="shrink-0" />}
         </div>
 
         {/* Count + expand icon */}
         {variant === 'default' && (
           <div className="cn-studio-card-expand-button-bottom">
-            <Text color="foreground-1" variant="body-single-line-code">
+            <Text color="foreground-1" variant="body-code" className="leading-none">
               +{stepCount} more
             </Text>
             <IconV2
@@ -266,13 +268,13 @@ function Status({ status, theme, children }: PropsWithChildren<StudioCardStatusP
  * ====================
  */
 
-function Tag({ tagText, icon }: PropsWithChildren<{ tagText: string; icon?: IconV2NamesType }>): JSX.Element {
+function Tag({ tagText, icon, theme = 'purple' }: StudioCardTagProps): JSX.Element {
   const truncatedText = tagText.length > 12 ? `${tagText.slice(0, 12)}...` : tagText
 
   return (
-    <div className="cn-studio-card-tag">
+    <div className="cn-studio-card-tag" data-theme={theme}>
       {icon && <IconV2 name={icon} size="xs" />}
-      <Text title={tagText} color="inherit" variant="caption-single-line-normal">
+      <Text title={tagText} color="inherit" variant="caption-single-line-normal" truncate>
         {truncatedText}
       </Text>
     </div>
@@ -335,7 +337,7 @@ function StudioCardButton({
       type="button"
       className={cn('cn-studio-card-button', 'bg-cn-3 shadow-cn-none self-start', className)}
     >
-      <Text color="foreground-1" variant="body-single-line-code">
+      <Text color="foreground-1" variant="body-code" className="leading-none">
         {children}
       </Text>
       {icon && <IconV2 className="text-cn-2" name={icon} size="sm" />}

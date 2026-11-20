@@ -1,4 +1,4 @@
-import React, {
+import {
   ComponentPropsWithoutRef,
   createContext,
   ElementRef,
@@ -33,7 +33,6 @@ const useReasoning = () => {
   return context
 }
 
-const AUTO_CLOSE_DELAY = 1000
 const MS_IN_S = 1000
 
 export type ReasoningRootProps = ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Root> & {
@@ -57,8 +56,8 @@ const ReasoningRoot = forwardRef<ElementRef<typeof CollapsiblePrimitive.Root>, R
   ) => {
     const [isOpen, setIsOpen] = useState(open ?? defaultOpen)
     const [duration, setDuration] = useState<number | undefined>(durationProp)
-    const [hasAutoClosed, setHasAutoClosed] = useState(false)
     const startTimeRef = useRef<number | null>(null)
+    const previousIsStreamingRef = useRef(isStreaming)
 
     // Sync with controlled open prop
     useEffect(() => {
@@ -86,18 +85,16 @@ const ReasoningRoot = forwardRef<ElementRef<typeof CollapsiblePrimitive.Root>, R
       }
     }, [isStreaming])
 
-    // Auto-close when streaming ends (once only)
+    // Auto-collapse only on the transition from streaming to complete.
     useEffect(() => {
-      if (defaultOpen && !isStreaming && isOpen && !hasAutoClosed) {
-        const timer = setTimeout(() => {
-          setIsOpen(false)
-          setHasAutoClosed(true)
-          onOpenChange?.(false)
-        }, AUTO_CLOSE_DELAY)
+      const didStreamingEnd = previousIsStreamingRef.current && !isStreaming
+      previousIsStreamingRef.current = isStreaming
 
-        return () => clearTimeout(timer)
+      if (didStreamingEnd) {
+        setIsOpen(false)
+        onOpenChange?.(false)
       }
-    }, [isStreaming, isOpen, defaultOpen, hasAutoClosed, onOpenChange])
+    }, [isStreaming, onOpenChange])
 
     const handleOpenChange = useCallback(
       (newOpen: boolean) => {
@@ -132,20 +129,20 @@ export type ReasoningTriggerProps = ComponentPropsWithoutRef<typeof CollapsibleP
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number): ReactNode => {
   if (isStreaming || duration === 0) {
     return (
-      <Shimmer variant={'caption-light'} color={'foreground-3'} duration={1}>
+      <Shimmer variant={'caption-normal'} color={'foreground-3'} duration={1}>
         Thinking...
       </Shimmer>
     )
   }
   if (duration === undefined) {
     return (
-      <Text variant={'caption-light'} color={'foreground-3'}>
+      <Text variant={'caption-normal'} color={'foreground-3'}>
         Thought for a few seconds
       </Text>
     )
   }
   return (
-    <Text variant={'caption-light'} color={'foreground-3'}>
+    <Text variant={'caption-normal'} color={'foreground-3'}>
       Thought for {duration} seconds
     </Text>
   )
@@ -175,7 +172,7 @@ const ReasoningTrigger = forwardRef<ElementRef<typeof CollapsiblePrimitive.Trigg
 ReasoningTrigger.displayName = 'ReasoningTrigger'
 
 export type ReasoningContentProps = ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Content> & {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 const ReasoningContent = forwardRef<ElementRef<typeof CollapsiblePrimitive.Content>, ReasoningContentProps>(

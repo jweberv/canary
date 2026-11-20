@@ -19,9 +19,7 @@ vi.mock('@components/text', () => ({
     'body-normal': 'body-normal',
     'body-single-line-normal': 'body-single-line-normal',
     'caption-normal': 'caption-normal',
-    'caption-light': 'caption-light',
     'caption-single-line-normal': 'caption-single-line-normal',
-    'caption-single-line-light': 'caption-single-line-light',
     'heading-base': 'heading-base'
   }
 }))
@@ -234,9 +232,7 @@ describe('SkeletonTypography', () => {
       'body-normal',
       'body-single-line-normal',
       'caption-normal',
-      'caption-light',
       'caption-single-line-normal',
-      'caption-single-line-light',
       'heading-base'
     ]
 

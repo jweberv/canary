@@ -1,0 +1,50 @@
+---
+title: Harness Design System
+description: A unified component library built on design tokens, with support for multiple themes and accessibility variants
+template: splash
+tableOfContents: false
+home: true
+---
+
+import GetStartedButton from "@/components/get-started-button";
+import BrowseComponentsButton from "@/components/browse-components-button";
+import ComponentGrid from "@/components/component-grid";
+
+<div className="cn-home-hero not-content">
+  <h1 className="cn-home-hero-title">Unified by system. Defined by design.</h1>
+  <p className="cn-home-hero-subtitle">
+    A shared system of tokens, components, and patterns for building consistent,
+    accessible Harness experiences across products and themes.
+  </p>
+  <div className="cn-home-cta-row">
+    <GetStartedButton />
+    <BrowseComponentsButton />
+  </div>
+</div>
+
+<div className="cn-feature-grid not-content">
+  <div className="cn-feature-item">
+    <span className="cn-feature-value">60+</span>
+    <span className="cn-feature-label">Components</span>
+  </div>
+  <div className="cn-feature-item">
+    <span className="cn-feature-value">24</span>
+    <span className="cn-feature-label">Theme variants</span>
+  </div>
+  <div className="cn-feature-item">
+    <span className="cn-feature-value">WCAG</span>
+    <span className="cn-feature-label">AA accessible</span>
+  </div>
+  <div className="cn-feature-item">
+    <span className="cn-feature-value">LCH</span>
+    <span className="cn-feature-label">Perceptual colors</span>
+  </div>
+</div>
+
+## Components
+
+Browse all available components grouped by category.
+
+<div className="not-content" style="max-width: 100%; width: 100%;">
+  <ComponentGrid client:only="react" />
+</div>

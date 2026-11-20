@@ -41,18 +41,36 @@ vi.mock('vaul', () => {
   )
   DrawerOverlay.displayName = 'DrawerOverlay'
 
-  const DrawerTitleComponent = React.forwardRef<any, any>(({ children, ...props }, ref) => (
-    <h2 ref={ref} data-testid="drawer-title" {...props}>
-      {children}
-    </h2>
-  ))
+  const DrawerTitleComponent = React.forwardRef<any, any>(({ children, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement, {
+        ...props,
+        ref,
+        'data-testid': 'drawer-title'
+      })
+    }
+    return (
+      <h2 ref={ref} data-testid="drawer-title" {...props}>
+        {children}
+      </h2>
+    )
+  })
   DrawerTitleComponent.displayName = 'DrawerTitle'
 
-  const DrawerDescriptionComponent = React.forwardRef<any, any>(({ children, ...props }, ref) => (
-    <p ref={ref} data-testid="drawer-description" {...props}>
-      {children}
-    </p>
-  ))
+  const DrawerDescriptionComponent = React.forwardRef<any, any>(({ children, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return React.cloneElement(children as React.ReactElement, {
+        ...props,
+        ref,
+        'data-testid': 'drawer-description'
+      })
+    }
+    return (
+      <p ref={ref} data-testid="drawer-description" {...props}>
+        {children}
+      </p>
+    )
+  })
   DrawerDescriptionComponent.displayName = 'DrawerDescription'
 
   return {
@@ -88,9 +106,70 @@ describe('DrawerHeaderV2', () => {
     expect(screen.getByText('Build #142')).toBeInTheDocument()
   })
 
+  test('renders title through Drawer.Title (asChild)', () => {
+    render(<HeaderV2 title="Build #142" />)
+    const title = screen.getByTestId('drawer-title')
+    expect(title).toBeInTheDocument()
+    expect(title).toHaveTextContent('Build #142')
+  })
+
   test('renders description when provided', () => {
     render(<HeaderV2 title="Build #142" description="main branch" />)
     expect(screen.getByText('main branch')).toBeInTheDocument()
+  })
+
+  test('renders description through Drawer.Description (asChild)', () => {
+    render(<HeaderV2 title="Build #142" description="main branch" />)
+    const description = screen.getByTestId('drawer-description')
+    expect(description).toBeInTheDocument()
+    expect(description).toHaveTextContent('main branch')
+    expect(description).not.toHaveClass('sr-only')
+  })
+
+  test('renders sr-only fallback description when description is omitted', () => {
+    render(<HeaderV2 title="Build #142" />)
+    const description = screen.getByTestId('drawer-description')
+    expect(description).toBeInTheDocument()
+    expect(description).toHaveClass('sr-only')
+    expect(description).toHaveTextContent('No description available')
+  })
+
+  test('does not render sr-only fallback when description is provided', () => {
+    const { container } = render(<HeaderV2 title="Build #142" description="main branch" />)
+    expect(container.querySelector('.sr-only')).not.toBeInTheDocument()
+    expect(screen.getAllByTestId('drawer-description')).toHaveLength(1)
+  })
+
+  test('renders tagline above the title when provided', () => {
+    const { container } = render(<HeaderV2 title="Build #142" tagline="Pipelines / main" />)
+    expect(screen.getByText('Pipelines / main')).toBeInTheDocument()
+    expect(container.querySelector('.cn-drawer-tagline')).toBeInTheDocument()
+  })
+
+  test('clamps the description via the header-v2 description class', () => {
+    const { container } = render(<HeaderV2 title="Build #142" description="a very long description" />)
+    expect(container.querySelector('.cn-drawer-header-v2-description')).toBeInTheDocument()
+  })
+
+  test('Drawer.Header renders the structured layout when a title prop is passed', () => {
+    const { container } = render(
+      <Drawer.Header title="Build #142" tagline="Pipelines / main" description="main branch" />
+    )
+    expect(screen.getByText('Build #142')).toBeInTheDocument()
+    expect(screen.getByText('main branch')).toBeInTheDocument()
+    expect(container.querySelector('.cn-drawer-header-v2')).toBeInTheDocument()
+  })
+
+  test('Drawer.Header still renders the legacy composition layout with children', () => {
+    const { container } = render(
+      <Drawer.Header>
+        <Drawer.Title>Legacy Title</Drawer.Title>
+      </Drawer.Header>
+    )
+    expect(screen.getByText('Legacy Title')).toBeInTheDocument()
+    // legacy wrapper class, not the structured one
+    expect(container.querySelector('.cn-drawer-header')).toBeInTheDocument()
+    expect(container.querySelector('.cn-drawer-header-v2')).not.toBeInTheDocument()
   })
 
   test('renders icon when provided', () => {
@@ -144,6 +223,18 @@ describe('DrawerHeaderV2', () => {
     expect(screen.getByRole('tablist')).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Logs' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Inputs' })).toBeInTheDocument()
+  })
+
+  test('renders tab badge when provided', () => {
+    render(
+      <Tabs.Root defaultValue="logs">
+        <HeaderV2
+          title="Build"
+          tabs={[{ label: 'Logs', value: 'logs', badge: { variant: 'primary', theme: 'info', content: 'New' } }]}
+        />
+      </Tabs.Root>
+    )
+    expect(screen.getByText('New')).toBeInTheDocument()
   })
 
   test('does not render tabs when omitted', () => {

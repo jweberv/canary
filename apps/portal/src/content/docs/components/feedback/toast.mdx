@@ -1,41 +1,26 @@
 ---
 title: Toast
-description: Toast component
-beta: true
+description: An imperative API for showing transient notifications
 ---
 
-import { Code, Card, Aside } from "@astrojs/starlight/components";
+import { Code, Aside } from "@astrojs/starlight/components";
 import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
 
-`toast` is a toast component that is used to display notifications to the user. It is handled by `Toaster` component, that is added in the root of the app.
+<PageTabsToc />
 
-To show a simple toast, use the `toast` function.
+<div id="page-level-tabs">
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <Button
-      onClick={() =>
-        toast({
-          title: 'Toast title',
-          description: Array.from({ length: Math.floor(Math.random() * 1000) + 1 })
-            .map(() => 'a')
-            .join(''),
-          options: {
-            duration: 3000,
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                console.log('Undo')
-              }
-            }
-          }
-        })
-      }
-    >
-      Show toast
-    </Button>`}
-/>
+<Tabs>
+
+<TabItem label="Overview">
+
+`toast` is an imperative API for showing transient notifications. You call it from anywhere in your app, and the `Toaster` component — mounted once at the root — renders the result.
+
+Choose a `type` to pick which function fires — `toast` for neutral messages, `toast.success` / `toast.danger` for outcomes, `toast.info` for notices, and `toast.loading` / `toast.promise` for in-progress work. `title` is the bold heading and `description` the detail line (loading and promise toasts show only a title). Through `options` you can set a `duration`, allow or block dismissal with `dismissible`, and attach an `action` button; info toasts additionally take a `secondaryAction`, a `ctaPosition`, and a `severity` border. Try them in the playground below.
+
+<DocsPage.ToastPlayground client:only />
 
 <Code
   code={`
@@ -61,225 +46,134 @@ To show a simple toast, use the `toast` function.
   lang="typescript"
 />
 
+## Installation
+
+```tsx
+import { Toaster, toast } from "@harnessio/ui/components";
+
+// Mount the Toaster once, at the root of your app
+<Toaster />;
+
+// Then call toast from anywhere
+toast({
+  title: "Saved",
+  description: "Your changes have been saved.",
+});
+```
+
+</TabItem>
+
+<TabItem label="Usage">
+
 ## Toast types
 
-`toast` can be used to show different types of toasts.
+`toast` can show different types of toasts:
 
-<ol>
-  <li>- Default toast (`toast`)</li>
-  <li>- Success toast (`toast.success`)</li>
-  <li>- Danger toast (`toast.danger`)</li>
-  <li>- Info toast (`toast.info`)</li>
-  <li>- Loading toast (`toast.loading`)</li>
-  <li>- Promise toast (`toast.promise`)</li>
-</ol>
+- Default toast — `toast`
+- Success toast — `toast.success`
+- Danger toast — `toast.danger`
+- Info toast — `toast.info`
+- Loading toast — `toast.loading`
+- Promise toast — `toast.promise`
 
-<Card title="Points to Note">
+## Behavior
 
-<ol className='space-y-cn-md'>
-  <li>Maximum number of toasts that can be displayed at a time is 3.</li>
-  <li>- If <code>duration</code> is not provided, the toast will be closed after <strong>10 seconds</strong> by default.</li>
-  <li>- Close button in toast will be hidden only if <code>dismissible</code> is set to false in <code>options</code>. By default, it is set to true.</li>
-  <li>- Action button can be added to toast by providing <code>action</code> in <code>options</code>.</li>
-  <li>- Clicking of action button will execute the callback function provided in <code>action</code> and will not close the toast by default. If you want to close the toast after clicking the action button, you can use <code>toast.dismiss</code> in the callback function.</li>
-  <li>- Promise toast and Loading toast cannot be dismissed by the user, it will be closed after the promise is resolved or rejected (Promise toast) or when the work in progress task is completed (Loading toast).</li>
-  <li>- Promise toast and Loading toast cannot display a <code>description</code></li>
-</ol>
-</Card>
+- At most **3 toasts** are visible at a time; additional toasts queue behind them.
+- If `duration` is not provided, a toast closes automatically after **10 seconds**.
+- A toast shows a close button unless `dismissible` is set to `false` in `options`. By default `dismissible` is `true`.
+- Add an action button by providing `action` in `options`. Clicking it runs the `action` callback but does **not** close the toast — call `toast.dismiss` inside the callback if you want it to.
+- **Loading toasts** cannot be dismissed by the user; close them with `toast.dismiss(id)`.
+- **Promise toasts** close automatically 7 seconds after the promise settles.
+- Loading and promise toasts cannot display a `description`.
 
-## Usage
+## When to use a toast
 
-### Success toast
+Use a success toast only when the user can't already see that the action worked.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <Button
-      onClick={() =>
-        toast.success({
-          title: 'Toast title',
-          description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magni magnam quibusdam fugit saepe voluptates aperiam perspiciatis ipsam! Ad cupiditate, tempora aspernatur a, veritatis, rem maxime est aliquam natus iure vero. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dignissimos quis reprehenderit quas! Praesentium, delectus perferendis? Dicta, reiciendis? Sint ipsa necessitatibus natus, magni, delectus consequuntur, aperiam asperiores in quasi commodi doloribus?",
-          options: {
-            duration: 5000,
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                console.log('Undo')
-              }
-            }
-          }
-        })
-      }
-    >
-      Show success toast
-    </Button>`}
-/>
+**Skip the toast when**
 
-### Danger toast
+- The result is on screen: a new row appears, a toggle flips, an edit saves in place.
+- The user lands on the result, like being taken to a new item's page after creating it.
+- The action is small and easy to undo, like checking a box or changing a filter.
+- It would fire over and over, like autosave.
+- The action is a delete. Deletes always use a confirmation dialog, never a toast.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <Button
-      onClick={() =>
-        toast.danger({
-          title: 'Toast title',
-          description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magni magnam quibusdam fugit saepe voluptates aperiam perspiciatis ipsam! Ad cupiditate, tempora aspernatur a, veritatis, rem maxime est aliquam natus iure vero.",
-          options: {
-            duration: 5000,
-            action: {
-              label: 'Undo',
-              onClick: () => {
-                console.log('Undo')
-              }
-            }
-          }
-        })
-      }
-    >
-      Show danger toast
-    </Button>`}
-/>
+**Use a toast when**
 
-### Info toast
+- The result is somewhere else — for example, moving an item to another project.
+- Nothing changes on screen. Copying to the clipboard is the classic case.
+- The work takes time. Confirm when it starts ("Export started") and when it finishes ("Export ready"), especially if the user may have moved on.
+- Many things happened at once. Say what happened: "12 members added," or "9 of 12 added, 3 failed," with a link to details.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <Button
-      onClick={() =>
-        toast.info({
-          title: 'Toast title',
-          description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Magni magnam quibusdam fugit saepe voluptates aperiam perspiciatis ipsam! Ad cupiditate, tempora aspernatur a, veritatis, rem maxime est aliquam natus iure vero.",
-          options: {
-            duration: 5000,
-          }
-        })
-      }
-    >
-      Show info toast
-    </Button>`}
-/>
+**Writing them**
 
-### Loading toast
+- Be specific and use past tense — "Member added" is better than "Success!"
+- Match the type to the message: `success` / `danger` for outcomes, `info` for neutral notices, `loading` / `promise` for in-progress work.
+- Keep the `title` short and put any detail in the `description`.
+- Add an `action` like "Undo" or "View details" when there's a meaningful next step.
+- Dismiss automatically after about 5 seconds.
+- Keep it to one toast at a time, and combine multiple results into one message.
+- Don't use a toast for errors or anything the user needs to act on — those should stay on screen.
 
-<Aside type="caution">
-  Loading toast needs to be closed manually. use `toast.dismiss` to close the
-  toast using the toast id.
-</Aside>
+## Accessibility
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-    <Button
-      onClick={() => {
-        const _toastId = toast.loading({
-          title: 'Loading data...',
-          options: {
-            action: {
-              label: 'Close',
-              onClick: () => {
-                toast.dismiss(_toastId)
-              }
-            }
-          }
-        })
-      }}
-    >
-      Show loading toast
-    </Button>
-        `}
-/>
+### Labeling & semantics
 
-### Promise toast
+- Toasts are announced by the `Toaster`'s live region, so screen-reader users hear new notifications without moving focus.
+- Because toasts disappear on a timer, don't rely on them alone to convey information a user needs to act on — pair important states with persistent UI.
 
-Promise toast accepts a **promise** as its **first argument** and an **options object** as its **second argument**.
+</TabItem>
 
-<Aside type="caution">
-  Promise toast cannot be dismissed by the user, it will be closed after 7
-  seconds when the promise is resolved or rejected.
-</Aside>
+<TabItem label="Properties">
 
-<DocsPage.ComponentExample
-  client:only
-  code={`
-() => (
-  <Button
-    onClick={() => {
-      const _toastId = toast.promise(new Promise((resolve, reject) => {
-        const random = Math.random()
-        setTimeout(() => {
-          if (random > 0.5) {
-            resolve('Promise resolved')
-          } else {
-            reject('Promise rejected')
-          }
-        }, 5000)
-      }), {
-        loadingMessage: 'Promise in progress',
-        successMessage: 'Promise resolved successfully',
-        errorMessage: 'Promise rejected',
-        options: {
-          action: {
-            label: 'Action',
-            onClick: () => {
-              console.log('Action')
-              toast.dismiss(_toastId)
-            },
-          },
-        },
-      })
-    }
-    }
-  >
-    Show promise toast
-  </Button>
-)
-`}
-/>
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
+
+## Properties
 
 ### Toast params
 
-Toast params are the parameters that are passed to the toast function.
+Parameters passed to the toast function.
 
 <DocsPage.PropsTable
   props={[
     {
       name: "title",
-      description: "Title of the toast",
+      description: "Title of the toast.",
       required: true,
       value: "string",
     },
     {
-      name: "options",
-      description: "Options object for the toast",
-      required: false,
-      value: "ToastOptions",
-    },
-    {
       name: "description",
-      description: "Description of the toast",
+      description:
+        "Description of the toast. Not supported for loading and promise toasts.",
       required: false,
       value: "ReactNode",
     },
     {
+      name: "options",
+      description:
+        "Options object for the toast. Info toast uses InfoToastOptions.",
+      required: false,
+      value: "ToastOptions | InfoToastOptions",
+    },
+    {
       name: "loadingMessage",
       description:
-        "It is specific for promise toast. Loading message to be displayed when the promise is in progress",
-      required: true,
+        "Promise toast only (required). Message shown while the promise is in progress.",
+      required: false,
       value: "string",
     },
     {
       name: "successMessage",
       description:
-        "It is specific for promise toast. Success message to be displayed when the promise is resolved",
+        "Promise toast only. Message shown when the promise resolves.",
       required: false,
       value: "string",
     },
     {
       name: "errorMessage",
       description:
-        "It is specific for promise toast. Error message to be displayed when the promise is rejected",
+        "Promise toast only. Message shown when the promise rejects.",
       required: false,
       value: "string",
     },
@@ -288,28 +182,83 @@ Toast params are the parameters that are passed to the toast function.
 
 ### Toast options
 
-Toast options are the configuration object that are passed to the toast parameter.
+The configuration object passed to the toast's `options` parameter.
 
 <DocsPage.PropsTable
   props={[
     {
       name: "duration",
       description:
-        "Duration of the toast to be closed after. Value should be in milliseconds.",
+        "How long, in milliseconds, before the toast closes automatically.",
       required: false,
+      defaultValue: "10000",
       value: "number",
     },
     {
       name: "action",
-      description: "Action button to be added to the toast",
+      description: "Action button added to the toast.",
       required: false,
       value: "Action",
     },
     {
       name: "dismissible",
-      description: "Whether the toast can be dismissed by the user",
+      description: "Whether the toast can be dismissed by the user.",
       required: false,
+      defaultValue: "true",
       value: "boolean",
+    },
+    {
+      name: "onClose",
+      description: "Called when the toast closes.",
+      required: false,
+      value: "() => void",
+    },
+    {
+      name: "onAutoClose",
+      description:
+        "Called when the toast closes on its own timer. Not wired for loading and promise toasts.",
+      required: false,
+      value: "() => void",
     },
   ]}
 />
+
+### Info toast options
+
+Info toasts (`toast.info`) accept everything above plus the following.
+
+<DocsPage.PropsTable
+  props={[
+    {
+      name: "secondaryAction",
+      description: "An optional second action button.",
+      required: false,
+      value: "Action",
+    },
+    {
+      name: "ctaPosition",
+      description:
+        'Placement of the action buttons. Defaults to "top" when omitted.',
+      required: false,
+      value: '"top" | "bottom"',
+    },
+    {
+      name: "severity",
+      description: "Border severity indicator.",
+      required: false,
+      value: '"Critical" | "High" | "Medium" | "Low"',
+    },
+  ]}
+/>
+
+<Aside type="note">
+  `Action` is `{ label: ReactNode; onClick: (event) => void }` (with an optional
+  `actionButtonStyle`). `toast.dismiss(id?)` closes a specific toast, or all
+  toasts when called with no id.
+</Aside>
+
+</TabItem>
+
+</Tabs>
+
+</div>

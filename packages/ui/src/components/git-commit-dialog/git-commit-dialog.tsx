@@ -19,7 +19,7 @@ import {
 import { useTranslation } from '@/context'
 import { UsererrorError, ViolationState } from '@/types'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 export const createGitCommitSchema = (isFileNameRequired: boolean) => {
   const fileNameSchema = isFileNameRequired ? z.string().min(1, 'File Name is required') : z.string().optional()
@@ -151,6 +151,7 @@ export const GitCommitDialog: FC<GitCommitDialogProps> = ({
               placeholder={
                 commitTitlePlaceHolder ?? t('component:commitDialog.form.commit.placeholder', 'Add a commit message')
               }
+              optional
             />
 
             <FormInput.Textarea
@@ -161,6 +162,7 @@ export const GitCommitDialog: FC<GitCommitDialogProps> = ({
                 'Add an optional extended description'
               )}
               label={t('component:commitDialog.form.description.label', 'Extended description')}
+              optional
             />
 
             <ControlGroup className="gap-cn-sm">

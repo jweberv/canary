@@ -1,40 +1,28 @@
 ---
 title: Draggable Card
 description: Draggable card component with drag and drop capabilities
-beta: true
 ---
+
+import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
+
+<PageTabsToc />
+
+<div id="page-level-tabs">
+
+<Tabs>
+
+<TabItem label="Overview">
 
 The `Draggable Card` component provides a powerful way to display and interact with cards, featuring drag and drop functionality. Built using dnd-kit, it offers a comprehensive solution for complex drag and drop interactions.
 
-import { DocsPage } from "@/components/docs-page";
-import { Aside } from "@astrojs/starlight/components";
+## Playground
 
-<DocsPage.ComponentExample
-  client:only
-  code={`() => {
-  const [cards, setCards] = React.useState([
-     {
-      id: '1',
-      title: 'First Card',
-      description: 'This is the first card. Try reordering it.'
-    },
-    {
-      id: '2',
-      title: 'Second Card',
-      description: 'This is the seconnd card. Drag and drop to reorder.'
-    }
-  ])
+<DocsPage.DraggableCardPlayground client:only />
 
-return (
-
-<DraggableCardList cards={cards} setCards={setCards} />) } `} />
-
-<Aside type="tip">
-  Try dragging the cards to reorder them. The component handles all the drag and
-  drop interactions for you.
-</Aside>
-
-## Usage
+## Installation
 
 ```typescript jsx
 import { DraggableCard, DraggableCardList, CardData } from '@harnessio/ui/components'
@@ -45,7 +33,7 @@ const [cards, setCards] = useState<CardData[]>([
     id: '1',
     title: 'First Card',
     description: 'This is the first card description',
-    disabled: false // Optional: disable dragging for this card
+    disableDragAndDrop: false // Optional: disable dragging for this card
   },
   {
     id: '2',
@@ -63,9 +51,7 @@ return (
 )
 ```
 
-### Advanced Example
-
-You can customize the card titles and descriptions with React components:
+Both `title` and `description` accept React components, not just strings, so you can render richer content:
 
 ```typescript jsx
 const [cards, setCards] = useState<CardData[]>([
@@ -87,409 +73,13 @@ const [cards, setCards] = useState<CardData[]>([
 ])
 ```
 
-## Example with Actions
+</TabItem>
 
-This example shows how to add interactive elements like close buttons to your draggable cards:
-
-<DocsPage.ComponentExample
-  client:only
-  code={`() => {
-  const [cards, setCards] = React.useState([
-    {
-      id: '1',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Eiffel Tower
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              9:00 AM - 11:30 AM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove from itinerary" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '1'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Visit the iconic iron lattice tower. Book tickets in advance to skip the lines.'
-    },
-    {
-      id: '2',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Louvre Museum
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              12:00 PM - 3:00 PM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove from itinerary" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '2'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Explore world-famous art collections including the Mona Lisa and Venus de Milo.'
-    },
-    {
-      id: '3',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Seine River Cruise
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              6:00 PM - 8:00 PM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove from itinerary" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '3'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Enjoy a scenic evening cruise with dinner and stunning views of Paris landmarks.'
-    }
-  ])
-
-return <DraggableCardList cards={cards} setCards={setCards} />
-}`}
-/>
-
-## Grip Position Outside
-
-The draggable card supports placing the grip handle outside the card container using `gripPosition="outside"`. This creates a cleaner card appearance with the drag handle positioned to the left of the card.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`() => {
-  const [cards, setCards] = React.useState([
-    {
-      id: '1',
-      gripPosition: 'outside',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Product Backlog Review
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              Monday, 10:00 AM - 11:00 AM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove meeting" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '1'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Weekly review of backlog items and sprint planning preparation.'
-    },
-    {
-      id: '2',
-      gripPosition: 'outside',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Design System Sync
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              Tuesday, 2:00 PM - 3:00 PM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove meeting" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '2'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Discuss component library updates and design token changes.'
-    },
-    {
-      id: '3',
-      gripPosition: 'outside',
-      title: (
-        <Layout.Horizontal align="center" className="flex-1">
-          <Layout.Vertical gap="none" className="flex-1">
-            <Text variant="heading-base" color="foreground-1">
-              Sprint Retrospective
-            </Text>
-            <Text variant="caption-normal" className="text-muted">
-              Friday, 4:00 PM - 5:00 PM
-            </Text>
-          </Layout.Vertical>
-          <Button 
-            iconOnly
-            variant="ghost"
-            size="sm"
-            tooltipProps={{ content: "Remove meeting" }}
-            onClick={(e) => {
-              e.stopPropagation()
-              setCards(cards.filter(c => c.id !== '3'))
-            }}
-          >
-            <IconV2 name="xmark" skipSize />
-          </Button>
-        </Layout.Horizontal>
-      ),
-      description: 'Team reflection on sprint achievements and areas for improvement.'
-    }
-  ])
-
-return <DraggableCardList cards={cards} setCards={setCards} />
-}`}
-/>
-
-## Sticky Headers
-
-Use the `sticky` and `header` props on `DraggableCardList` for the common pattern of a pinned header above a draggable list inside a scrollable drawer. These props wrap the list in a [`StickyListSection`](/components/utilities/sticky-list-section) internally.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`() => {
-  const [serviceCards, setServiceCards] = React.useState([
-    { id: 's1', size: 'md', gripPosition: 'outside', title: 'auth-service' },
-    { id: 's2', size: 'md', gripPosition: 'outside', title: 'api-gateway' },
-    { id: 's3', size: 'md', gripPosition: 'outside', title: 'notification-svc' },
-    { id: 's4', size: 'md', gripPosition: 'outside', title: 'billing-service' },
-    { id: 's5', size: 'md', gripPosition: 'outside', title: 'user-service' },
-    { id: 's6', size: 'md', gripPosition: 'outside', title: 'search-indexer' },
-    { id: 's7', size: 'md', gripPosition: 'outside', title: 'email-worker' },
-    { id: 's8', size: 'md', gripPosition: 'outside', title: 'config-manager' },
-  ])
-
-const [envCards, setEnvCards] = React.useState([
-{ id: 'e1', size: 'md', gripPosition: 'outside', title: 'production' },
-{ id: 'e2', size: 'md', gripPosition: 'outside', title: 'staging' },
-{ id: 'e3', size: 'md', gripPosition: 'outside', title: 'development' },
-{ id: 'e4', size: 'md', gripPosition: 'outside', title: 'qa-environment' },
-{ id: 'e5', size: 'md', gripPosition: 'outside', title: 'load-testing' },
-{ id: 'e6', size: 'md', gripPosition: 'outside', title: 'sandbox' },
-{ id: 'e7', size: 'md', gripPosition: 'outside', title: 'pre-production' },
-{ id: 'e8', size: 'md', gripPosition: 'outside', title: 'integration' },
-{ id: 'e9', size: 'md', gripPosition: 'outside', title: 'canary' },
-{ id: 'e10', size: 'md', gripPosition: 'outside', title: 'disaster-recovery' },
-])
-
-const SectionHeader = ({ label }) => (
-
-<Layout.Horizontal align="center" className="py-cn-xs w-full justify-between">
-  <Text className="text-sm font-medium" color="foreground-1">
-    {label}
-  </Text>
-  <Button variant="outline" size="sm">
-    <IconV2 name="plus" size="sm" />
-    Add {label.toLowerCase()}
-  </Button>
-</Layout.Horizontal>
-)
-
-return (
-
-<Drawer.Root>
-  <Drawer.Trigger>
-    <Button>Open Drawer</Button>
-  </Drawer.Trigger>
-  <Drawer.Content size="sm">
-    <Drawer.Header>
-      <Drawer.Title>Configure stage</Drawer.Title>
-    </Drawer.Header>
-    <Drawer.Body>
-      <Layout.Vertical gap="md">
-        <DraggableCardList
-          sticky
-          header={<SectionHeader label="Service" />}
-          cards={serviceCards}
-          setCards={setServiceCards}
-          listGap="sm"
-        />
-        <DraggableCardList
-          sticky
-          header={<SectionHeader label="Environment" />}
-          cards={envCards}
-          setCards={setEnvCards}
-          listGap="sm"
-        />
-      </Layout.Vertical>
-    </Drawer.Body>
-    <Drawer.Footer>
-      <Button>Submit</Button>
-    </Drawer.Footer>
-  </Drawer.Content>
-</Drawer.Root>
-) }`} />
-
-### Contained Mode (inside form wrappers)
-
-Use `contained` when the `DraggableCardList` is nested inside form input wrappers or other intermediate elements, but the drawer body is still the scroll container. Set `--cn-sticky-container-padding` on an ancestor to control how far the header bleeds horizontally.
-
-<DocsPage.ComponentExample
-  client:only
-  code={`() => {
-  const [serviceCards, setServiceCards] = React.useState([
-    { id: 's1', size: 'sm', gripPosition: 'outside', title: 'auth-service' },
-    { id: 's2', size: 'sm', gripPosition: 'outside', title: 'api-gateway' },
-    { id: 's3', size: 'sm', gripPosition: 'outside', title: 'notification-svc' },
-    { id: 's4', size: 'sm', gripPosition: 'outside', title: 'billing-service' },
-    { id: 's5', size: 'sm', gripPosition: 'outside', title: 'user-service' },
-    { id: 's6', size: 'sm', gripPosition: 'outside', title: 'search-indexer' },
-    { id: 's7', size: 'sm', gripPosition: 'outside', title: 'email-worker' },
-    { id: 's8', size: 'sm', gripPosition: 'outside', title: 'config-manager' },
-    { id: 's9', size: 'sm', gripPosition: 'outside', title: 'payment-processor' },
-    { id: 's10', size: 'sm', gripPosition: 'outside', title: 'cache-layer' },
-    { id: 's11', size: 'sm', gripPosition: 'outside', title: 'event-bus' },
-    { id: 's12', size: 'sm', gripPosition: 'outside', title: 'analytics-ingest' },
-  ])
-
-const [envCards, setEnvCards] = React.useState([
-{ id: 'e1', size: 'sm', gripPosition: 'outside', title: 'production' },
-{ id: 'e2', size: 'sm', gripPosition: 'outside', title: 'staging' },
-{ id: 'e3', size: 'sm', gripPosition: 'outside', title: 'development' },
-{ id: 'e4', size: 'sm', gripPosition: 'outside', title: 'qa-environment' },
-{ id: 'e5', size: 'sm', gripPosition: 'outside', title: 'load-testing' },
-{ id: 'e6', size: 'sm', gripPosition: 'outside', title: 'sandbox' },
-{ id: 'e7', size: 'sm', gripPosition: 'outside', title: 'pre-production' },
-{ id: 'e8', size: 'sm', gripPosition: 'outside', title: 'integration' },
-{ id: 'e9', size: 'sm', gripPosition: 'outside', title: 'canary' },
-{ id: 'e10', size: 'sm', gripPosition: 'outside', title: 'disaster-recovery' },
-{ id: 'e11', size: 'sm', gripPosition: 'outside', title: 'perf-testing' },
-{ id: 'e12', size: 'sm', gripPosition: 'outside', title: 'blue-green-a' },
-{ id: 'e13', size: 'sm', gripPosition: 'outside', title: 'blue-green-b' },
-{ id: 'e14', size: 'sm', gripPosition: 'outside', title: 'feature-flags' },
-])
-
-return (
-
-<Drawer.Root>
-<Drawer.Trigger>
-<Button>Open Form Drawer</Button>
-</Drawer.Trigger>
-<Drawer.Content size="sm">
-<Drawer.Header>
-<Drawer.Title>Stage configuration</Drawer.Title>
-<Drawer.Description>Schema-driven form with nested inputs</Drawer.Description>
-</Drawer.Header>
-<Drawer.Body>
-<Layout.Vertical gap="lg">
-<ControlGroup>
-<Label>Stage Name</Label>
-<Input placeholder="deploy-prod" />
-</ControlGroup>
-
-            <ControlGroup>
-              <Label>Deployment Type</Label>
-              <Input placeholder="Kubernetes" disabled value="Kubernetes" />
-            </ControlGroup>
-
-            <div style={{ '--cn-sticky-container-padding': 'calc(var(--cn-drawer-container) + var(--cn-layout-xl))' }}>
-              <DraggableCardList
-                sticky
-                contained
-                header={
-                  <Layout.Horizontal align="center" className="py-cn-xs w-full justify-between">
-                    <Text className="text-sm font-medium" color="foreground-1">Service</Text>
-                    <Button variant="outline" size="sm">
-                      <IconV2 name="plus" size="sm" />
-                      Add
-                    </Button>
-                  </Layout.Horizontal>
-                }
-                cards={serviceCards}
-                setCards={setServiceCards}
-                listGap="xs"
-              />
-            </div>
-
-            <div style={{ '--cn-sticky-container-padding': 'calc(var(--cn-drawer-container) + var(--cn-layout-xl))' }}>
-              <DraggableCardList
-                sticky
-                contained
-                header={
-                  <Layout.Horizontal align="center" className="py-cn-xs w-full justify-between">
-                    <Text className="text-sm font-medium" color="foreground-1">Environment</Text>
-                    <Button variant="outline" size="sm">
-                      <IconV2 name="plus" size="sm" />
-                      Add
-                    </Button>
-                  </Layout.Horizontal>
-                }
-                cards={envCards}
-                setCards={setEnvCards}
-                listGap="xs"
-              />
-            </div>
-
-            <ControlGroup>
-              <Label>Timeout</Label>
-              <Input placeholder="10m" />
-            </ControlGroup>
-          </Layout.Vertical>
-        </Drawer.Body>
-        <Drawer.Footer>
-          <Button variant="outline">Cancel</Button>
-          <Button>Apply</Button>
-        </Drawer.Footer>
-      </Drawer.Content>
-    </Drawer.Root>
-
-)
-}`} />
-
-<Aside type="tip">
-  The sticky headers bleed to the drawer edges using
-  `--cn-sticky-container-padding`, even though the lists are nested inside
-  `ControlGroup` and `Layout.Vertical` wrappers.
-</Aside>
+<TabItem label="Usage">
 
 ## Anatomy
 
-The draggable card system consists of two main components:
+The draggable card system is two components working together:
 
 ```typescript jsx
 // Individual card component
@@ -497,7 +87,7 @@ The draggable card system consists of two main components:
   id="unique-id"
   title="Card Title"
   description="Card Description"
-  disabled={false}
+  disableDragAndDrop={false}
 />
 
 // List component that manages multiple cards
@@ -507,11 +97,61 @@ The draggable card system consists of two main components:
 />
 ```
 
-## API Reference
+- **DraggableCardList** — the container you'll usually reach for. It owns the drag context (dnd-kit's `DndContext` + `SortableContext`), renders each entry in `cards` as a `DraggableCard`, and calls `setCards` with the new order when a drag ends. `listGap` controls the spacing between cards.
+- **DraggableCard** — a single [Card](/components/data-display/card/) with a grip handle. By default (`gripPosition="inside"`) the grip sits inline at the start of the title row; `gripPosition="outside"` moves it to the left of the card for a cleaner surface. Setting `disableDragAndDrop` on a card makes it static.
+- **Grip handle** — a `grip-dots` icon that shows a grab cursor; it's the drag affordance dnd-kit's pointer sensor listens to.
+- **Sticky header** — passing `header` renders content above the list; adding `sticky` wraps the whole thing in a [`StickyListSection`](/components/utilities/sticky-list-section) so the header pins while the list scrolls.
 
-### `DraggableCard`
+## Best practices
 
-The individual card component that can be dragged and reordered.
+{/* TODO: editorial — please review against product guidance. */}
+
+**Do**
+
+- Give every card a stable, unique `id` — reordering relies on it.
+- Use `gripPosition="outside"` when the card content is dense or already has its own actions, so the drag affordance stays distinct.
+- Reach for `sticky` + `header` when a reorderable list lives inside a scrollable drawer or panel and the group needs a label.
+- Set `disableDragAndDrop` on cards that must stay in place rather than hiding the grip yourself.
+
+**Don't**
+
+- Don't put the only copy of a critical action behind drag — provide buttons (like the remove button in the examples) for anything a keyboard or touch user must reach.
+- Don't nest draggable lists so deeply that it's unclear which list an item belongs to.
+
+## Content
+
+{/* TODO: editorial — please review against product guidance. */}
+
+- Keep card titles short and scannable; a reorderable list is easier to manage when each row reads at a glance.
+- Put secondary details in `description`, and keep row actions (remove, settings) compact and clearly labeled with tooltips.
+
+## Accessibility
+
+Reordering is powered by dnd-kit. The list is configured with a pointer sensor, so dragging works with mouse and touch.
+
+### Labeling
+
+- The grip is an icon-only affordance. Any interactive content you place in a card (buttons, links) must carry its own accessible label — the examples use `tooltipProps` on the remove buttons for this.
+
+### Focus & states
+
+- While a card is being dragged it dims (reduced opacity) and lifts above its siblings, giving a clear visual cue for the item in motion.
+
+### Known limitations
+
+- **Reordering is pointer/touch-only.** The list registers a pointer sensor but no keyboard sensor, so cards can't be reordered from the keyboard. Where order matters for keyboard or assistive-technology users, provide an alternative way to change it (for example, up/down controls).
+
+</TabItem>
+
+<TabItem label="Properties">
+
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
+
+## Properties
+
+### DraggableCard
+
+The individual card component that can be dragged and reordered. It also accepts [Card](/components/data-display/card/) root props (such as `size` and `className`).
 
 <DocsPage.PropsTable
   props={[
@@ -534,15 +174,24 @@ The individual card component that can be dragged and reordered.
       value: "string | ReactNode",
     },
     {
-      name: "disabled",
-      description: "If true, the card cannot be dragged. Default is false.",
+      name: "disableDragAndDrop",
+      description: "If true, the card cannot be dragged.",
       required: false,
       value: "boolean",
+      defaultValue: "false",
+    },
+    {
+      name: "gripPosition",
+      description:
+        "Where the drag handle sits: 'inside' places it inline in the title row, 'outside' places it to the left of the card.",
+      required: false,
+      value: "'inside' | 'outside'",
+      defaultValue: "'inside'",
     },
   ]}
 />
 
-### `DraggableCardList`
+### DraggableCardList
 
 A container component that manages a list of draggable cards.
 
@@ -584,20 +233,29 @@ A container component that manages a list of draggable cards.
       name: "listGap",
       description: "Gap between cards in the list",
       required: false,
-      value: "'xs' | 'sm' | 'md'",
+      value: "GapSize",
+      defaultValue: "'md'",
     },
   ]}
 />
 
-### `CardData` Interface
+### CardData
 
-The interface for the card data objects used by the DraggableCardList component.
+The interface for the card data objects used by the `DraggableCardList` component. It extends the [Card](/components/data-display/card/) root props (minus `title` / `children`).
 
 ```typescript
 interface CardData {
   id: string;
   title: string | React.ReactNode;
   description?: string | React.ReactNode;
-  disabled?: boolean;
+  disableDragAndDrop?: boolean;
+  gripPosition?: "inside" | "outside";
+  // ...plus Card root props such as size, className
 }
 ```
+
+</TabItem>
+
+</Tabs>
+
+</div>

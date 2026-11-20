@@ -1,309 +1,157 @@
 ---
 title: Text
-description: Text component
-beta: true
+description: Versatile typographic component with variants, colors, and wrapping
 ---
 
-The `Text` component is a versatile typographic component that supports various styling options through variants, colors, and text alignment. It automatically maps semantic HTML elements based on the selected variant.
-
 import { DocsPage } from "@/components/docs-page";
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+import { Aside } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
+
+<PageTabsToc />
+
+<div id="page-level-tabs">
+
+<Tabs>
+
+<TabItem label="Overview">
+
+The `Text` component is a versatile typographic component that supports various styling options through variants, colors, and text alignment. It picks a sensible default HTML element based on the selected variant, which you can override with `as`.
+
+Use `variant` to set the typographic style (headings, body, and caption scales) and `color` to tint it — leave `color` unset to inherit the variant's own default. `align` controls horizontal alignment, while `wrap` tunes how lines break. For overflow, `truncate` cuts a single line with an ellipsis and `lineClamp` limits the text to a set number of lines (it takes precedence over `truncate`). Try them in the playground below.
+
+<DocsPage.TextPlayground client:only />
+
+## Highlight text
+
+`HighlightText` renders a string with the characters matching `match` wrapped in `<mark>`. Matching is fuzzy (the same fuzzysort matching used by file search), so `match="rdm"` highlights the letters of "README". With no `match`, or no match found, it renders plain text.
 
 <DocsPage.ComponentExample
   client:only
   code={`
-    <Text variant="heading-hero">
-        Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.
-    </Text>
+  <Layout.Vertical gap="sm">
+    <HighlightText text="README.md" match="rdm" />
+    <HighlightText text="pipeline-graph.tsx" match="pipe" />
+    <HighlightText text="No match here" match="zzz" />
+  </Layout.Vertical>
 `}
 />
 
-## Usage
+```tsx
+import { HighlightText } from "@harnessio/ui/components";
 
-```typescript jsx
-import { Text } from '@harnessio/ui/components'
-
-// ...
-
-return (
-  <>
-    {/* Basic usage */}
-    <Text>Default text with body-normal variant</Text>
-
-    {/* With variants */}
-    <Text variant="heading-section">Section Heading</Text> // Maps to <h2>
-    <Text variant="body-strong">Important text with stronger emphasis</Text>
-
-    {/* With colors */}
-    <Text color="foreground-1">High-contrast text</Text>
-    <Text color="success">Success message</Text>
-
-    {/* With custom element */}
-    <Text variant="heading-hero" as="h2">Hero heading as H2</Text> //  <h1> => <h2>
-    <Text<'time'> as="time" dateTime="2025-07-07">July 7</Text>
-
-    {/* With truncation */}
-    <Text truncate>This text will be truncated with an ellipsis if it overflows</Text>
-
-    {/* With text wrapping options */}
-    <Text wrap="balance">This text will be balanced for better readability</Text>
-  </>
-)
+<HighlightText text={file.name} match={searchQuery} />;
 ```
 
-## `Variant`
+## Installation
 
-The `Text` component supports various typographic variants that map to semantic HTML elements.
-The default variant is `body-normal`, which renders as a `<p>` element. Other variants include:
+```tsx
+import { Text } from "@harnessio/ui/components";
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="grid gap-cn-md">
-    <Text as="h3" variant="heading-section">Heading variants:</Text>
-    <div>
-        <Text variant="heading-base" color="foreground-2" className="underline mb-cn-3xs">heading-hero:</Text>
-        <Text variant="heading-hero">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" color="foreground-2" className="underline mb-cn-3xs">heading-section:</Text>
-        <Text variant="heading-section">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" color="foreground-2" className="underline mb-cn-3xs">heading-subsection:</Text>
-        <Text variant="heading-subsection">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" color="foreground-2" className="underline mb-cn-3xs">heading-base:</Text>
-        <Text variant="heading-base">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" color="foreground-2" className="underline mb-cn-3xs">heading-small:</Text>
-        <Text variant="heading-small">dummyText</Text>
-    </div>
+// Basic
+<Text>Default text with the body-normal variant</Text>
 
-    <hr />
+// Variant + color
+<Text variant="heading-section" color="foreground-1">Section heading</Text>
 
-    <Text as="h3" variant="heading-section">Body variants:</Text>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-normal:</Text>
-        <Text variant="body-normal">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-single-line-normal:</Text>
-        <Text variant="body-single-line-normal">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-single-line-light:</Text>
-        <Text variant="body-single-line-light">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-strong:</Text>
-        <Text variant="body-strong">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-single-line-strong:</Text>
-        <Text variant="body-single-line-strong">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">body-code:</Text>
-        <Text variant="body-code" wrap="wrap">dummyText</Text>
-    </div>
+// Override the element for correct semantics
+<Text variant="heading-hero" as="h1">Hero heading as a real h1</Text>
 
-    <hr />
+// Truncation
+<Text truncate>Truncated with an ellipsis if it overflows</Text>
+```
 
-    <Text as="h3" variant="heading-section">Caption variants</Text>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">caption-normal:</Text>
-        <Text variant="caption-normal">dummyText</Text>
+</TabItem>
 
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">caption-light:</Text>
-        <Text variant="caption-light">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">caption-single-line-normal:</Text>
-        <Text variant="caption-single-line-normal">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">caption-single-line-light:</Text>
-        <Text variant="caption-single-line-light">dummyText</Text>
-    </div>
+<TabItem label="Usage">
 
-</div>`.replaceAll('dummyText', `Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.`)}
-/>
+## Anatomy
 
-## `Color`
+`Text` renders a single typographic element chosen from the `variant`, with the color, alignment, wrapping, and truncation applied as classes.
 
-The `Text` component supports various color options to enhance visibility and convey meaning. The default color is `foreground-2`. Other available colors include:
+- Each variant maps to a default HTML element: `heading-*` and `body-*` variants render as `<p>`, `body-code` and `body-code-strong` as `<pre>`, and `caption-*` as `<span>`.
+- Heading variants render as `<p role="heading">` rather than a real `<h1>`–`<h6>`. Use `as` (e.g. `as="h2"`) when you need a true heading level in the document outline.
+- `as` overrides the element; `asChild` merges Text's props onto the single child you provide instead of rendering its own element.
+- `truncate` and `lineClamp` both add a native `title` tooltip carrying the full text; `lineClamp` wins when both are set.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="grid gap-cn-md">
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">inherit:</Text>
-        <Text color="inherit">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">foreground-1:</Text>
-        <Text color="foreground-1">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">foreground-2:</Text>
-        <Text color="foreground-2">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">foreground-3:</Text>
-        <Text color="foreground-3">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">state-disabled:</Text>
-        <Text color="state-disabled">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">success:</Text>
-        <Text color="success">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">warning:</Text>
-        <Text color="warning">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">danger:</Text>
-        <Text color="danger">dummyText</Text>
-    </div>
+## Best practices
 
-</div>`.replaceAll('dummyText', `Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.`)}
-/>
+**Do**
 
-## `Align`
+- Choose the `variant` that matches the content's role so hierarchy stays consistent — don't recreate sizes with `className`.
+- Use `as` to give headings the correct semantic level (`h1`–`h6`); the visual variant and the element are independent.
+- Prefer `lineClamp` for multi-line clamping and `truncate` for single-line ellipsis.
+- Let `color` convey state (`success`, `warning`, `danger`) rather than hard-coded color classes.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="grid gap-cn-md">
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">default:</Text>
-        <Text>dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">left:</Text>
-        <Text align="left">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">center:</Text>
-        <Text align="center">dummyText</Text>
-    </div>
-    <div>
-        <Text variant="heading-base" className="underline mb-cn-3xs">right:</Text>
-        <Text align="right">dummyText</Text>
-    </div>
-</div>`.replaceAll(
-    "dummyText",
-    `Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.`,
-  )}
-/>
+**Don't**
 
-## `Wrap`
+- Don't rely on `heading-*` variants alone for document structure — on their own they're `<p role="heading">` with no level.
+- Don't set both `truncate` and `lineClamp` expecting them to combine; `lineClamp` takes precedence.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="grid gap-cn-md">
-    <div className="max-w-[400px]">
-        <Text variant="heading-base" className="underline mb-cn-3xs">wrap:</Text>
-        <Text wrap="wrap">dummyText</Text>
-    </div>
-    <div className="max-w-[400px]">
-        <Text variant="heading-base" className="underline mb-cn-3xs">nowrap:</Text>
-        <Text wrap="nowrap">dummyText</Text>
-    </div>
-    <div className="max-w-[400px]">
-        <Text variant="heading-base" className="underline mb-cn-3xs">pretty:</Text>
-        <Text wrap="pretty">dummyText</Text>
-    </div>
-    <div className="max-w-[400px]">
-        <Text variant="heading-base" className="underline mb-cn-3xs">balance:</Text>
-        <Text wrap="balance">dummyText</Text>
-    </div>
-</div>`.replaceAll(
-    "dummyText",
-    `Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.`,
-  )}
-/>
+## Accessibility
 
-## `Truncate`
+### Labeling & semantics
 
-The `truncate` prop allows you to truncate text with an ellipsis if it overflows its container. This is particularly useful for single-line text that should not wrap.
+- Heading variants expose `role="heading"` but no heading level. For a meaningful outline, pass the matching `as` element (`as="h2"`, etc.).
+- When truncated (via `truncate` or `lineClamp`), the full text is preserved in the element's `title` attribute so it remains discoverable on hover.
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="max-w-[400px]">
-    <Text variant="body-normal" truncate>
-        Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.
-    </Text>
-</div>`}
-/>
+### Focus & states
 
-## `Line Clamp`
+- `Text` is non-interactive and adds no focus behavior of its own. Any interactive element you render through `as`/`asChild` keeps its native behavior.
 
-The `lineClamp` prop controls how many lines of text are shown before truncating. It can be set to a specific number or to 'default' for the component's default behavior.
+</TabItem>
 
-> Note: The `lineClamp` prop takes precedence over the `truncate` prop when both are used, as it provides more specific control over text clamping.
+<TabItem label="Properties">
 
-<DocsPage.ComponentExample
-  client:only
-  code={`<div className="max-w-[400px]">
-    <Text variant="body-normal" lineClamp="2">
-        Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.
-    </Text>
-</div>`}
-/>
+{/* Visually hidden — anchors the section headings below in the TOC without showing a redundant title in the panel body (the tab already says "Properties"). Hidden via #page-level-tabs h2#properties in styles.css. */}
 
-## API Reference
+## Properties
 
 <DocsPage.PropsTable
   props={[
     {
       name: "variant",
-      description: "The typographic style variant of the text",
-      defaultValue: "body-normal",
+      description: "The typographic style variant of the text.",
+      defaultValue: "'body-normal'",
       required: false,
       value:
-        "'heading-hero' | 'heading-section' | 'heading-subsection' | 'heading-base' | 'heading-small' | 'body-normal' | 'body-single-line-normal' | 'body-single-line-light' | 'body-strong' | 'body-single-line-strong' | 'body-code' | 'caption-normal' | 'caption-light' | 'caption-strong' | 'caption-single-line-normal' | 'caption-single-line-light'",
+        "'heading-hero' | 'heading-section' | 'heading-default' | 'heading-subsection' | 'heading-base' | 'heading-small' | 'body-normal' | 'body-single-line-normal' | 'body-strong' | 'body-single-line-strong' | 'body-code' | 'body-code-strong' | 'caption-normal' | 'caption-strong' | 'caption-code' | 'caption-code-strong' | 'caption-single-line-normal'",
     },
     {
       name: "color",
-      description: "The color of the text",
-      defaultValue: "foreground-2",
+      description:
+        "The color of the text. Defaults to foreground-2, except heading variants which default to foreground-1.",
+      defaultValue: "'foreground-2'",
       required: false,
       value:
         "'inherit' | 'foreground-1' | 'foreground-2' | 'foreground-3' | 'foreground-4' | 'disabled' | 'success' | 'warning' | 'danger' | 'merged' | 'brand'",
     },
     {
       name: "align",
-      description: "The text alignment",
-      defaultValue: undefined,
+      description: "The text alignment.",
       required: false,
       value: "'left' | 'center' | 'right'",
     },
     {
       name: "as",
       description:
-        "Override the element type that will be rendered. By default it depends on the variant. For example, 'heading-hero' will render as an <h1> element, while 'body-normal' will render as a <p> element.",
-      defaultValue: "'span'",
+        "Override the rendered element. By default the element is derived from the variant (heading and body variants render as <p>, body-code and body-code-strong as <pre>, caption variants as <span>). Use this to get a real heading level, for example as='h2'.",
+      defaultValue: "(derived from variant)",
       required: false,
       value:
-        "'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label' | 'legend' | 'caption' | 'figcaption' | 'blockquote' | 'pre' | 'kbd' | 'var' | 'code' | 'samp' | 'cite' | 'time' | 'address' | 'strong' | 'abbr' | 'em' | 'li' | 'dt'| 'dd'",
+        "'div' | 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label' | 'legend' | 'caption' | 'figcaption' | 'blockquote' | 'pre' | 'kbd' | 'var' | 'code' | 'samp' | 'cite' | 'time' | 'address' | 'strong' | 'abbr' | 'em' | 'li' | 'dt' | 'dd' | 'del' | 'ins'",
     },
     {
       name: "asChild",
       description:
-        "Change the default rendered element for the one passed as a child, merging their props and behavior",
+        "Merge Text's props and behavior onto the single child element instead of rendering its own element.",
       defaultValue: "false",
       required: false,
       value: "boolean",
     },
     {
       name: "truncate",
-      description: "Truncates text with an ellipsis",
+      description: "Truncates text with an ellipsis. Overridden by lineClamp.",
       defaultValue: "false",
       required: false,
       value: "boolean",
@@ -311,29 +159,65 @@ The `lineClamp` prop controls how many lines of text are shown before truncating
     {
       name: "lineClamp",
       description:
-        "Controls how many lines of text are shown before truncating",
-      defaultValue: undefined,
+        "Controls how many lines of text are shown before truncating. Takes precedence over truncate.",
       required: false,
       value: "'1' | '2' | '3' | '4' | '5' | '6' | 'default'",
     },
     {
       name: "wrap",
-      description: "Controls how text wraps",
-      defaultValue: "wrap",
+      description:
+        "Controls how text wraps. No wrapping style is applied unless set.",
       required: false,
       value: "'wrap' | 'nowrap' | 'pretty' | 'balance'",
     },
     {
       name: "className",
-      description: "Additional CSS classes to apply to the text",
+      description: "Additional CSS classes to apply to the text.",
       required: false,
       value: "string",
     },
     {
       name: "children",
-      description: "The content of the text",
+      description: "The content of the text.",
       required: true,
       value: "ReactNode",
     },
   ]}
 />
+
+<Aside type="note">
+  `Text` also accepts the standard attributes of whatever element it renders
+  (via `as`), such as `title`, `id`, or `dateTime` on `as="time"`.
+</Aside>
+
+### `HighlightText`
+
+<DocsPage.PropsTable
+  props={[
+    {
+      name: "text",
+      description: "The string to render.",
+      required: true,
+      value: "string",
+    },
+    {
+      name: "match",
+      description:
+        "Fuzzy query whose matching characters are highlighted with <mark>.",
+      required: false,
+      value: "string | null",
+    },
+    {
+      name: "className",
+      description: "Class applied to the wrapping span.",
+      required: false,
+      value: "string",
+    },
+  ]}
+/>
+
+</TabItem>
+
+</Tabs>
+
+</div>

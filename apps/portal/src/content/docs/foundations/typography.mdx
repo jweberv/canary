@@ -5,9 +5,16 @@ description: Typography guidelines and styles for consistent text presentation
 
 import { DocsPage } from "@/components/docs-page";
 import { Text } from "@harnessio/ui/components";
-import { Aside } from "@astrojs/starlight/components";
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
+import PageTabsToc from "@/components/page-tabs-toc.astro";
 
-Consistency in typography helps users navigate content with ease. Always use hierarchy to guide attention and improve readability.
+<PageTabsToc />
+
+<div id="page-level-tabs">
+
+<Tabs>
+
+<TabItem label="Overview">
 
 Our typography system is built around a set of predefined text styles that provide consistent visual hierarchy and readability across the application. The `Text` component is the primary way to implement these typographic styles.
 
@@ -41,7 +48,7 @@ The design system uses two typefaces with optically adjusted weights for Inter:
           <td className="cn-table-v2-cell">
             All UI text — headings, body, captions, micro
           </td>
-          <td className="cn-table-v2-cell">310 · 360 · 440 · 550</td>
+          <td className="cn-table-v2-cell">400 · 500</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
@@ -51,18 +58,12 @@ The design system uses two typefaces with optically adjusted weights for Inter:
           <td className="cn-table-v2-cell">
             Code snippets, technical content, file paths
           </td>
-          <td className="cn-table-v2-cell">Light · Regular · Medium</td>
+          <td className="cn-table-v2-cell">Regular · Bold</td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
-
-<Aside type="note" title="Optical weights">
-  Inter uses variable font instances tuned for optical balance — CSS weight
-  `400` maps to **360**, `500` to **440**. The `.font-*` Tailwind classes apply
-  these values automatically.
-</Aside>
 
 ## Type Scale Reference
 
@@ -72,7 +73,7 @@ Each text style maps to a composite Tailwind utility class (`.font-*`) that appl
 
 Headings establish the information hierarchy and provide structure to content.
 
-<div className="cn-table-v2 cn-table-v2-normal not-content">
+<div className="cn-table-v2 cn-table-v2-normal not-content ds-type-specimen">
   <div className="cn-table-v2-container">
     <table className="cn-table-v2-element">
       <thead className="cn-table-v2-header">
@@ -81,7 +82,10 @@ Headings establish the information hierarchy and provide structure to content.
             Variant
           </th>
           <th className="cn-table-v2-head">Preview</th>
-          <th className="cn-table-v2-head" style={{ width: "90px" }}>
+          <th
+            className="cn-table-v2-head"
+            style={{ width: "110px", whiteSpace: "nowrap" }}
+          >
             Specs
           </th>
           <th className="cn-table-v2-head" style={{ width: "176px" }}>
@@ -99,23 +103,23 @@ Headings establish the information hierarchy and provide structure to content.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">28px · 440</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">28px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-heading-hero</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
-            <code>heading-section</code>
+            <code>heading-default</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-heading-section text-cn-1">
+            <span className="font-heading-default text-cn-1">
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">24px · 360</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">20px · 500</td>
           <td className="cn-table-v2-cell">
-            <code>font-heading-section</code>
+            <code>font-heading-default</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
@@ -127,7 +131,7 @@ Headings establish the information hierarchy and provide structure to content.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">18px · 360</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">18px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-heading-subsection</code>
           </td>
@@ -141,7 +145,7 @@ Headings establish the information hierarchy and provide structure to content.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">16px · 360</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">16px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-heading-base</code>
           </td>
@@ -155,7 +159,7 @@ Headings establish the information hierarchy and provide structure to content.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">14px · 440</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">14px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-heading-small</code>
           </td>
@@ -165,11 +169,16 @@ Headings establish the information hierarchy and provide structure to content.
   </div>
 </div>
 
+<p className="font-caption-normal text-cn-3">
+  Note: <code>heading-section</code> is not shown in the table above and will be
+  deprecated in 2027.
+</p>
+
 ### Body
 
 Body text is used for the main content.
 
-<div className="cn-table-v2 cn-table-v2-normal not-content">
+<div className="cn-table-v2 cn-table-v2-normal not-content ds-type-specimen">
   <div className="cn-table-v2-container">
     <table className="cn-table-v2-element">
       <thead className="cn-table-v2-header">
@@ -178,7 +187,10 @@ Body text is used for the main content.
             Variant
           </th>
           <th className="cn-table-v2-head">Preview</th>
-          <th className="cn-table-v2-head" style={{ width: "90px" }}>
+          <th
+            className="cn-table-v2-head"
+            style={{ width: "150px", whiteSpace: "nowrap" }}
+          >
             Specs
           </th>
           <th className="cn-table-v2-head" style={{ width: "210px" }}>
@@ -192,11 +204,11 @@ Body text is used for the main content.
             <code>body-normal</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-body-normal text-cn-2">
+            <span className="font-body-normal text-cn-1">
               The quick brown fox jumps over the lazy dog.
             </span>
           </td>
-          <td className="cn-table-v2-cell">14px · 360</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">14px · 400</td>
           <td className="cn-table-v2-cell">
             <code>font-body-normal</code>
           </td>
@@ -206,27 +218,13 @@ Body text is used for the main content.
             <code>body-strong</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-body-strong text-cn-2">
+            <span className="font-body-strong text-cn-1">
               The quick brown fox jumps over the lazy dog.
             </span>
           </td>
-          <td className="cn-table-v2-cell">14px · 440</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">14px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-body-strong</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>body-light</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-body-light text-cn-2">
-              The quick brown fox jumps over the lazy dog.
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">14px · 310</td>
-          <td className="cn-table-v2-cell">
-            <code>font-body-light</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
@@ -234,69 +232,29 @@ Body text is used for the main content.
             <code>body-code</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-body-code text-cn-2">
+            <span className="font-body-code text-cn-1">
               npm install @harnessio/ui
             </span>
           </td>
-          <td className="cn-table-v2-cell">13px · mono</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">12px · mono</td>
           <td className="cn-table-v2-cell">
             <code>font-body-code</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
-            <code>body-single-line-normal</code>
+            <code>body-code-strong</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-body-single-line-normal text-cn-2">
-              For UI components
+            <span className="font-body-code-strong text-cn-1">
+              npm install @harnessio/ui
             </span>
           </td>
-          <td className="cn-table-v2-cell">14px · 360 · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-body-single-line-normal</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>body-single-line-strong</code>
+          <td className="cn-table-v2-cell whitespace-nowrap">
+            12px · mono bold
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-body-single-line-strong text-cn-2">
-              For UI components
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">14px · 440 · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-body-single-line-strong</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>body-single-line-light</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-body-single-line-light text-cn-2">
-              For UI components
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">14px · 310 · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-body-single-line-light</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>body-single-line-code</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-body-single-line-code text-cn-2">
-              const x = 42
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">13px · mono · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-body-single-line-code</code>
+            <code>font-body-code-strong</code>
           </td>
         </tr>
       </tbody>
@@ -308,7 +266,7 @@ Body text is used for the main content.
 
 Captions are used for labels and metadata.
 
-<div className="cn-table-v2 cn-table-v2-normal not-content">
+<div className="cn-table-v2 cn-table-v2-normal not-content ds-type-specimen">
   <div className="cn-table-v2-container">
     <table className="cn-table-v2-element">
       <thead className="cn-table-v2-header">
@@ -317,7 +275,10 @@ Captions are used for labels and metadata.
             Variant
           </th>
           <th className="cn-table-v2-head">Preview</th>
-          <th className="cn-table-v2-head" style={{ width: "90px" }}>
+          <th
+            className="cn-table-v2-head"
+            style={{ width: "150px", whiteSpace: "nowrap" }}
+          >
             Specs
           </th>
           <th className="cn-table-v2-head" style={{ width: "230px" }}>
@@ -331,11 +292,11 @@ Captions are used for labels and metadata.
             <code>caption-normal</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-caption-normal text-cn-2">
+            <span className="font-caption-normal text-cn-1">
               Label text for UI elements
             </span>
           </td>
-          <td className="cn-table-v2-cell">13px · 360</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">12px · 400</td>
           <td className="cn-table-v2-cell">
             <code>font-caption-normal</code>
           </td>
@@ -345,27 +306,13 @@ Captions are used for labels and metadata.
             <code>caption-strong</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-caption-strong text-cn-2">
+            <span className="font-caption-strong text-cn-1">
               Label text for UI elements
             </span>
           </td>
-          <td className="cn-table-v2-cell">13px · 440</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">12px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-caption-strong</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>caption-light</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-caption-light text-cn-2">
-              Label text for UI elements
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">13px · 310</td>
-          <td className="cn-table-v2-cell">
-            <code>font-caption-light</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
@@ -373,11 +320,89 @@ Captions are used for labels and metadata.
             <code>caption-code</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-caption-code text-cn-2">v2.4.1-beta</span>
+            <span className="font-caption-code text-cn-1">v2.4.1-beta</span>
           </td>
-          <td className="cn-table-v2-cell">12.6px · mono</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">12px · mono</td>
           <td className="cn-table-v2-cell">
             <code>font-caption-code</code>
+          </td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>caption-code-strong</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <span className="font-caption-code-strong text-cn-1">
+              v2.4.1-beta
+            </span>
+          </td>
+          <td className="cn-table-v2-cell whitespace-nowrap">
+            12px · mono bold
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>font-caption-code-strong</code>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+### Single line
+
+Single-line variants are for text inside fixed-height controls and components where it must stay on one line: buttons, badges, tags, menu and sidebar items, and table cells. They use a fixed 16px line-height, so truncate overflowing text instead of letting it wrap. **Don't use them for sentences, descriptions, paragraphs, headings, or titles**; use `body-normal`, `caption-normal`, or a heading variant instead.
+
+<div className="cn-table-v2 cn-table-v2-normal not-content ds-type-specimen">
+  <div className="cn-table-v2-container">
+    <table className="cn-table-v2-element">
+      <thead className="cn-table-v2-header">
+        <tr className="cn-table-v2-row">
+          <th className="cn-table-v2-head" style={{ width: "230px" }}>
+            Variant
+          </th>
+          <th className="cn-table-v2-head">Preview</th>
+          <th
+            className="cn-table-v2-head"
+            style={{ width: "240px", whiteSpace: "nowrap" }}
+          >
+            Specs
+          </th>
+          <th className="cn-table-v2-head" style={{ width: "230px" }}>
+            Tailwind Class
+          </th>
+        </tr>
+      </thead>
+      <tbody className="cn-table-v2-body">
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>body-single-line-normal</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <span className="font-body-single-line-normal text-cn-1">
+              Label text
+            </span>
+          </td>
+          <td className="cn-table-v2-cell whitespace-nowrap">
+            14px · 400 · 16px line-height
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>font-body-single-line-normal</code>
+          </td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>body-single-line-strong</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <span className="font-body-single-line-strong text-cn-1">
+              Label text
+            </span>
+          </td>
+          <td className="cn-table-v2-cell whitespace-nowrap">
+            14px · 500 · 16px line-height
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>font-body-single-line-strong</code>
           </td>
         </tr>
         <tr className="cn-table-v2-row">
@@ -385,55 +410,15 @@ Captions are used for labels and metadata.
             <code>caption-single-line-normal</code>
           </td>
           <td className="cn-table-v2-cell">
-            <span className="font-caption-single-line-normal text-cn-2">
-              For compact UI
+            <span className="font-caption-single-line-normal text-cn-1">
+              Metadata text
             </span>
           </td>
-          <td className="cn-table-v2-cell">13px · 360 · 1×</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">
+            12px · 400 · 16px line-height
+          </td>
           <td className="cn-table-v2-cell">
             <code>font-caption-single-line-normal</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>caption-single-line-strong</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-caption-single-line-strong text-cn-2">
-              For compact UI
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">13px · 440 · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-caption-single-line-strong</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>caption-single-line-light</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-caption-single-line-light text-cn-2">
-              For compact UI
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">13px · 310 · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-caption-single-line-light</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>caption-single-line-code</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-caption-single-line-code text-cn-2">
-              v2.4.1
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">12.6px · mono · 1×</td>
-          <td className="cn-table-v2-cell">
-            <code>font-caption-single-line-code</code>
           </td>
         </tr>
       </tbody>
@@ -443,7 +428,7 @@ Captions are used for labels and metadata.
 
 ### Micro
 
-<div className="cn-table-v2 cn-table-v2-normal not-content">
+<div className="cn-table-v2 cn-table-v2-normal not-content ds-type-specimen">
   <div className="cn-table-v2-container">
     <table className="cn-table-v2-element">
       <thead className="cn-table-v2-header">
@@ -452,7 +437,10 @@ Captions are used for labels and metadata.
             Variant
           </th>
           <th className="cn-table-v2-head">Preview</th>
-          <th className="cn-table-v2-head" style={{ width: "90px" }}>
+          <th
+            className="cn-table-v2-head"
+            style={{ width: "110px", whiteSpace: "nowrap" }}
+          >
             Specs
           </th>
           <th className="cn-table-v2-head" style={{ width: "176px" }}>
@@ -470,7 +458,7 @@ Captions are used for labels and metadata.
               Labels, signatures, technical info
             </span>
           </td>
-          <td className="cn-table-v2-cell">11.5px · 440</td>
+          <td className="cn-table-v2-cell whitespace-nowrap">11px · 500</td>
           <td className="cn-table-v2-cell">
             <code>font-micro-normal</code>
           </td>
@@ -525,7 +513,9 @@ Text colors help establish visual hierarchy and convey meaning.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">Body text (default)</td>
+          <td className="cn-table-v2-cell">
+            Body text (default), placeholder, Labels, secondary info
+          </td>
           <td className="cn-table-v2-cell">
             <code>text-cn-2</code>
           </td>
@@ -539,29 +529,21 @@ Text colors help establish visual hierarchy and convey meaning.
               The quick brown fox
             </span>
           </td>
-          <td className="cn-table-v2-cell">Labels, secondary info</td>
+          <td className="cn-table-v2-cell">Disabled text</td>
           <td className="cn-table-v2-cell">
             <code>text-cn-3</code>
-          </td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>foreground-4</code>
-          </td>
-          <td className="cn-table-v2-cell">
-            <span className="font-body-normal text-cn-4">
-              The quick brown fox
-            </span>
-          </td>
-          <td className="cn-table-v2-cell">Placeholders, disabled</td>
-          <td className="cn-table-v2-cell">
-            <code>text-cn-4</code>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
+
+<Aside type="caution" title="Upcoming change — target end of Nov '26">
+  `foreground-4` will be merged into `foreground-3` and is slated for
+  deprecation. Prefer `foreground-3` (`text-cn-3`) for new work instead of
+  `foreground-4` (`text-cn-4`).
+</Aside>
 
 ### Semantic
 
@@ -654,85 +636,19 @@ Text colors help establish visual hierarchy and convey meaning.
 
 Control horizontal text alignment.
 
-<div style={{ marginTop: "-1rem" }}>
-  <DocsPage.ComponentExample
-    client:only
-    code={`<div className="space-y-cn-sm">
-    <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-sm">
-        <span className="text-cn-size-2 text-cn-3 w-20 shrink-0 font-mono">left</span>
-        <Text align="left" className="flex-1">Left aligned text (default).</Text>
-    </div>
-    <div className="flex items-center gap-cn-md border-b border-cn-borders-3 pb-cn-sm">
-        <span className="text-cn-size-2 text-cn-3 w-20 shrink-0 font-mono">center</span>
-        <Text align="center" className="flex-1">Center aligned text.</Text>
-    </div>
-    <div className="flex items-center gap-cn-md">
-        <span className="text-cn-size-2 text-cn-3 w-20 shrink-0 font-mono">right</span>
-        <Text align="right" className="flex-1">Right aligned text.</Text>
-    </div>
-</div>`}
-  />
-</div>
+<DocsPage.TextLayoutPlayground client:only mode="align" />
 
 ## Text Wrapping
 
 Control how text wraps within containers.
 
-<div style={{ marginTop: "-1rem" }}>
-  <DocsPage.ComponentExample
-    client:only
-    code={`<div className="grid grid-cols-2 gap-cn-md">
-    <div>
-        <span className="text-cn-size-2 text-cn-3 font-mono block mb-cn-2xs">wrap (default)</span>
-        <div className="w-48 border border-dashed border-cn-borders-3 p-cn-sm rounded-cn-3">
-            <Text wrap="wrap">This is a long sentence that will wrap normally at word boundaries.</Text>
-        </div>
-    </div>
-    <div>
-        <span className="text-cn-size-2 text-cn-3 font-mono block mb-cn-2xs">nowrap</span>
-        <div className="w-48 border border-dashed border-cn-borders-3 p-cn-sm rounded-cn-3 overflow-hidden">
-            <Text wrap="nowrap">This text will not wrap and will overflow the container.</Text>
-        </div>
-    </div>
-    <div>
-        <span className="text-cn-size-2 text-cn-3 font-mono block mb-cn-2xs">balance</span>
-        <div className="w-48 border border-dashed border-cn-borders-3 p-cn-sm rounded-cn-3">
-            <Text wrap="balance">Text is balanced evenly across multiple lines.</Text>
-        </div>
-    </div>
-    <div>
-        <span className="text-cn-size-2 text-cn-3 font-mono block mb-cn-2xs">pretty</span>
-        <div className="w-48 border border-dashed border-cn-borders-3 p-cn-sm rounded-cn-3">
-            <Text wrap="pretty">Avoids orphan words at the end of paragraphs.</Text>
-        </div>
-    </div>
-</div>`}
-  />
-</div>
+<DocsPage.TextLayoutPlayground client:only mode="wrap" />
 
 ## Truncation & Line Clamp
 
 Limit text display with truncation or line clamping.
 
-<div style={{ marginTop: "-1rem" }}>
-  <DocsPage.ComponentExample
-    client:only
-    code={`<div className="space-y-cn-sm max-w-lg">
-    <div className="flex items-start gap-cn-md border-b border-cn-borders-3 pb-cn-sm">
-        <span className="text-cn-size-2 text-cn-3 w-24 shrink-0 font-mono">truncate</span>
-        <Text truncate className="flex-1">The quick brown fox jumps over the lazy dog. Pack my box.</Text>
-    </div>
-    <div className="flex items-start gap-cn-md border-b border-cn-borders-3 pb-cn-sm">
-        <span className="text-cn-size-2 text-cn-3 w-24 shrink-0 font-mono">lineClamp=2</span>
-        <Text lineClamp={2} className="flex-1">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump!</Text>
-    </div>
-    <div className="flex items-start gap-cn-md">
-        <span className="text-cn-size-2 text-cn-3 w-24 shrink-0 font-mono">lineClamp=3</span>
-        <Text lineClamp={3} className="flex-1">The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. How vexingly quick daft zebras jump! The five boxing wizards.</Text>
-    </div>
-</div>`}
-  />
-</div>
+<DocsPage.TextLayoutPlayground client:only mode="truncate" />
 
 ## Primitive Tokens
 
@@ -764,9 +680,9 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           </td>
           <td className="cn-table-v2-cell">16px</td>
           <td className="cn-table-v2-cell">
-            <code>text-cn-size-12</code>
+            <code>text-cn-size-10</code>
           </td>
-          <td className="cn-table-v2-cell">48px</td>
+          <td className="cn-table-v2-cell">28px</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
@@ -778,9 +694,9 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           </td>
           <td className="cn-table-v2-cell">18px</td>
           <td className="cn-table-v2-cell">
-            <code>text-cn-size-13</code>
+            <code>text-cn-size-11</code>
           </td>
-          <td className="cn-table-v2-cell">60px</td>
+          <td className="cn-table-v2-cell">36px</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
@@ -792,15 +708,15 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           </td>
           <td className="cn-table-v2-cell">20px</td>
           <td className="cn-table-v2-cell">
-            <code>text-cn-size-14</code>
+            <code>text-cn-size-12</code>
           </td>
-          <td className="cn-table-v2-cell">72px</td>
+          <td className="cn-table-v2-cell">48px</td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
             <code>text-cn-size-3</code>
           </td>
-          <td className="cn-table-v2-cell">12.6px</td>
+          <td className="cn-table-v2-cell">12px</td>
           <td className="cn-table-v2-cell">
             <code>text-cn-size-9</code>
           </td>
@@ -812,29 +728,128 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
-            <code>text-cn-size-4</code>
-          </td>
-          <td className="cn-table-v2-cell">13px</td>
-          <td className="cn-table-v2-cell">
-            <code>text-cn-size-10</code>
-          </td>
-          <td className="cn-table-v2-cell">28px</td>
-          <td className="cn-table-v2-cell">
-            <code>text-cn-size-16</code>
-          </td>
-          <td className="cn-table-v2-cell">128px</td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
             <code>text-cn-size-5</code>
           </td>
           <td className="cn-table-v2-cell">14px</td>
+          <td className="cn-table-v2-cell"></td>
+          <td className="cn-table-v2-cell"></td>
+          <td className="cn-table-v2-cell"></td>
+          <td className="cn-table-v2-cell"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+### Line Height Scale
+
+Line heights follow a flat 4px grid. **For typography, prefer the composite `.font-*` styles above** (or the `Text` component) — the `font` shorthand already pairs line-height with font-size, keeping size and leading in their intended relationship.
+
+When you do need to set line-height on its own, use the token-backed **`leading-cn-*`** utility (`leading-cn-8` … `leading-cn-40`) rather than Tailwind's stock `leading-*` classes or hard-coded pixel values. The stock classes are unitless multipliers that drift off the 4px grid (e.g. `leading-tight` on 12px = 15px); `leading-cn-*` always lands on-grid and tracks the ramp from a single source of truth.
+
+For the occasional **layout** case — e.g. sizing a placeholder box to a line of text — reference the token directly as an arbitrary value rather than hard-coding a pixel height, so it stays in sync with the type: `h-[var(--cn-line-height-20)]`.
+
+<div className="cn-table-v2 cn-table-v2-normal not-content">
+  <div className="cn-table-v2-container">
+    <table className="cn-table-v2-element">
+      <thead className="cn-table-v2-header">
+        <tr className="cn-table-v2-row">
+          <th className="cn-table-v2-head">Utility Class</th>
+          <th className="cn-table-v2-head">CSS Variable</th>
+          <th className="cn-table-v2-head">Value</th>
+          <th className="cn-table-v2-head">Pixels</th>
+        </tr>
+      </thead>
+      <tbody className="cn-table-v2-body">
+        <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
-            <code>text-cn-size-11</code>
+            <code>leading-cn-8</code>
           </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-8</code>
+          </td>
+          <td className="cn-table-v2-cell">0.5rem</td>
+          <td className="cn-table-v2-cell">8px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-12</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-12</code>
+          </td>
+          <td className="cn-table-v2-cell">0.75rem</td>
+          <td className="cn-table-v2-cell">12px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-16</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-16</code>
+          </td>
+          <td className="cn-table-v2-cell">1rem</td>
+          <td className="cn-table-v2-cell">16px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-20</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-20</code>
+          </td>
+          <td className="cn-table-v2-cell">1.25rem</td>
+          <td className="cn-table-v2-cell">20px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-24</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-24</code>
+          </td>
+          <td className="cn-table-v2-cell">1.5rem</td>
+          <td className="cn-table-v2-cell">24px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-28</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-28</code>
+          </td>
+          <td className="cn-table-v2-cell">1.75rem</td>
+          <td className="cn-table-v2-cell">28px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-32</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-32</code>
+          </td>
+          <td className="cn-table-v2-cell">2rem</td>
+          <td className="cn-table-v2-cell">32px</td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-36</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-36</code>
+          </td>
+          <td className="cn-table-v2-cell">2.25rem</td>
           <td className="cn-table-v2-cell">36px</td>
-          <td className="cn-table-v2-cell"></td>
-          <td className="cn-table-v2-cell"></td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">
+            <code>leading-cn-40</code>
+          </td>
+          <td className="cn-table-v2-cell">
+            <code>--cn-line-height-40</code>
+          </td>
+          <td className="cn-table-v2-cell">2.5rem</td>
+          <td className="cn-table-v2-cell">40px</td>
         </tr>
       </tbody>
     </table>
@@ -851,22 +866,19 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           <th className="cn-table-v2-head">Class</th>
           <th className="cn-table-v2-head">Value</th>
           <th className="cn-table-v2-head">Usage</th>
+          <th className="cn-table-v2-head">Preview</th>
         </tr>
       </thead>
       <tbody className="cn-table-v2-body">
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
-            <code>tracking-cn-tighter</code>
-          </td>
-          <td className="cn-table-v2-cell">-0.05em</td>
-          <td className="cn-table-v2-cell">Very tight, display text</td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
             <code>tracking-cn-tight</code>
           </td>
-          <td className="cn-table-v2-cell">-0.02em</td>
+          <td className="cn-table-v2-cell">-0.01em</td>
           <td className="cn-table-v2-cell">Headings</td>
+          <td className="cn-table-v2-cell tracking-cn-tight font-heading-base">
+            The quick brown fox
+          </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
@@ -874,6 +886,9 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           </td>
           <td className="cn-table-v2-cell">0em</td>
           <td className="cn-table-v2-cell">Default body text</td>
+          <td className="cn-table-v2-cell tracking-cn-normal">
+            The quick brown fox
+          </td>
         </tr>
         <tr className="cn-table-v2-row">
           <td className="cn-table-v2-cell">
@@ -881,25 +896,108 @@ Individual font size tokens are available via `text-cn-size-{n}` classes. These 
           </td>
           <td className="cn-table-v2-cell">0.025em</td>
           <td className="cn-table-v2-cell">Improved readability</td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>tracking-cn-wider</code>
+          <td className="cn-table-v2-cell tracking-cn-wide">
+            The quick brown fox
           </td>
-          <td className="cn-table-v2-cell">0.05em</td>
-          <td className="cn-table-v2-cell">Spaced text</td>
-        </tr>
-        <tr className="cn-table-v2-row">
-          <td className="cn-table-v2-cell">
-            <code>tracking-cn-widest</code>
-          </td>
-          <td className="cn-table-v2-cell">0.1em</td>
-          <td className="cn-table-v2-cell">All caps text</td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
+
+### Font Weight
+
+Weight tokens are **named buckets**. Each bucket name is the conventional CSS weight
+number (`400`, `500`), and each value is the **optically-tuned variable-font instance**
+that actually renders. Reach for these via `.font-*` classes or `<Text>`, not raw weights.
+
+<div className="cn-table-v2 cn-table-v2-normal not-content">
+  <div className="cn-table-v2-container">
+    <table className="cn-table-v2-element">
+      <thead className="cn-table-v2-header">
+        <tr className="cn-table-v2-row">
+          <th className="cn-table-v2-head" style={{ width: "130px" }}>
+            Family
+          </th>
+          <th className="cn-table-v2-head" style={{ width: "110px" }}>
+            Bucket (token)
+          </th>
+          <th className="cn-table-v2-head" style={{ width: "110px" }}>
+            Optical value
+          </th>
+          <th className="cn-table-v2-head" style={{ width: "100px" }}>
+            Reads as
+          </th>
+          <th className="cn-table-v2-head">Example</th>
+        </tr>
+      </thead>
+      <tbody className="cn-table-v2-body">
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">Inter</td>
+          <td className="cn-table-v2-cell">
+            <code>400</code>
+          </td>
+          <td className="cn-table-v2-cell">400</td>
+          <td className="cn-table-v2-cell">Regular</td>
+          <td className="cn-table-v2-cell">
+            <span style={{ fontWeight: 400 }}>
+              The quick brown fox jumps over the lazy dog.
+            </span>
+          </td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">Inter</td>
+          <td className="cn-table-v2-cell">
+            <code>500</code>
+          </td>
+          <td className="cn-table-v2-cell">500</td>
+          <td className="cn-table-v2-cell">Medium</td>
+          <td className="cn-table-v2-cell">
+            <span style={{ fontWeight: 500 }}>
+              The quick brown fox jumps over the lazy dog.
+            </span>
+          </td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">JetBrains Mono</td>
+          <td className="cn-table-v2-cell">
+            <code>400</code>
+          </td>
+          <td className="cn-table-v2-cell">400</td>
+          <td className="cn-table-v2-cell">Regular</td>
+          <td className="cn-table-v2-cell">
+            <span className="font-mono" style={{ fontWeight: 400 }}>
+              The quick brown fox jumps over the lazy dog.
+            </span>
+          </td>
+        </tr>
+        <tr className="cn-table-v2-row">
+          <td className="cn-table-v2-cell">JetBrains Mono</td>
+          <td className="cn-table-v2-cell">
+            <code>700</code>
+          </td>
+          <td className="cn-table-v2-cell">700</td>
+          <td className="cn-table-v2-cell">Bold</td>
+          <td className="cn-table-v2-cell">
+            <span
+              className="font-mono"
+              style={{
+                fontWeight: 700,
+                letterSpacing: "var(--cn-tracking-wide)",
+              }}
+            >
+              The quick brown fox jumps over the lazy dog.
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</TabItem>
+
+<TabItem label="Usage">
 
 ## Usage
 
@@ -909,7 +1007,7 @@ import { Text } from '@harnessio/ui/components'
 // Variants
 <Text variant="heading-hero">Hero</Text>
 <Text variant="body-normal">Body text</Text>
-<Text variant="caption-light">Caption</Text>
+<Text variant="caption-normal">Caption</Text>
 
 // Colors
 <Text color="foreground-1">Primary</Text>
@@ -928,6 +1026,15 @@ import { Text } from '@harnessio/ui/components'
 <Text as="h1" variant="heading-hero">Page Title</Text>
 ```
 
+<Aside type="tip" title="Best Practice">
+  Always use predefined text variants instead of custom font styles to ensure
+  consistency across the application.
+</Aside>
+
+</TabItem>
+
+<TabItem label="API">
+
 ## API Reference
 
 <DocsPage.PropsTable
@@ -939,7 +1046,7 @@ import { Text } from '@harnessio/ui/components'
       defaultValue: "body-normal",
       required: false,
       value:
-        "'heading-hero' | 'heading-section' | 'heading-subsection' | 'heading-base' | 'heading-small' | 'body-normal' | 'body-strong' | 'body-single-line-normal' | 'body-single-line-strong' | 'body-single-line-light' | 'body-code' | 'caption-normal' | 'caption-strong' | 'caption-light' | 'caption-single-line-normal' | 'caption-single-line-light'",
+        "'heading-hero' | 'heading-section' | 'heading-default' | 'heading-subsection' | 'heading-base' | 'heading-small' | 'body-normal' | 'body-strong' | 'body-single-line-normal' | 'body-single-line-strong' | 'body-code' | 'caption-normal' | 'caption-strong' | 'caption-single-line-normal'",
     },
     {
       name: "color",
@@ -993,7 +1100,8 @@ import { Text } from '@harnessio/ui/components'
   ]}
 />
 
-<Aside type="tip" title="Best Practice">
-  Always use predefined text variants instead of custom font styles to ensure
-  consistency across the application.
-</Aside>
+</TabItem>
+
+</Tabs>
+
+</div>

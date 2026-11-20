@@ -1,7 +1,13 @@
 import { ReactNode } from 'react'
 
+import type { MultiSelectOption } from '@components/multi-select'
 import { format } from 'date-fns'
 
+import { formatDateRangeV2Label } from '../date-range-v2/format-date-range-v2-label'
+import { normalizeDateRangeV2Config } from '../date-range-v2/normalize-picker-config'
+import { resolveTimeZone } from '../date-range-v2/resolve-date-range-v2'
+import { formatTimeZoneOffset } from '../date-range-v2/timezone-utils'
+import type { DateRangeV2Config, DateRangeV2Value } from '../date-range-v2/types'
 import { ComboBoxOptions } from './filters-bar/actions/variants/combo-box'
 import {
   CheckboxOptions,
@@ -11,6 +17,23 @@ import {
   FilterOptionConfig,
   FilterValueTypes
 } from './types'
+
+export const getDateRangeV2FilterLabel = (value: DateRangeV2Value | undefined, config?: DateRangeV2Config): string => {
+  if (!value) return ''
+  try {
+    const normalized = normalizeDateRangeV2Config(config)
+    const formatted = formatDateRangeV2Label(value, {
+      presets: normalized.presets,
+      triggerLabelConfig: normalized.triggerLabelConfig
+    })
+    const offset = normalized.triggerLabelConfig.showTimezone
+      ? ` · ${formatTimeZoneOffset(resolveTimeZone(value.timezone))}`
+      : ''
+    return `${formatted.buttonText}${offset}`
+  } catch {
+    return ''
+  }
+}
 
 export const getFilterLabelValue = <
   T extends string,
@@ -52,6 +75,10 @@ export const getFilterLabelValue = <
 
       return `${format(fromDate, 'MMM d, yyyy')} - ${format(toDate, 'MMM d, yyyy')}`
     }
+    case FilterFieldTypes.DateRangeV2: {
+      const filterValue = filter.value as DateRangeV2Value | undefined
+      return getDateRangeV2FilterLabel(filterValue, filterOption.filterFieldConfig)
+    }
     case FilterFieldTypes.ComboBox: {
       const filterValue = filter.value as ComboBoxOptions | undefined
       if (filterValue?.label) {
@@ -68,6 +95,12 @@ export const getFilterLabelValue = <
           selectedOption =>
             options?.find(option => option.value === selectedOption.value)?.label || selectedOption.value
         )
+        .join(', ')
+    }
+    case FilterFieldTypes.MultiTag: {
+      return (filter.value as MultiSelectOption[])
+        ?.map(option => String(option.id || (option.value ? `${option.key}:${option.value}` : option.key)))
+        .filter(Boolean)
         .join(', ')
     }
     case FilterFieldTypes.Text: {

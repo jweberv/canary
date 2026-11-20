@@ -93,7 +93,9 @@ export default {
       display: 'flex',
       justifyContent: 'space-between',
       width: '100%',
-      height: 'var(--cn-sidebar-min-height)'
+      height: 'var(--cn-sidebar-min-height)',
+      // Shell wrapper shares the sidebar surface (bg.2 — unchanged in light, gray.950 in dark)
+      backgroundColor: 'var(--cn-comp-sidebar-bg)'
     },
 
     '&-rail': {
@@ -182,13 +184,7 @@ export default {
 
     '&-submenu': {
       '&-group': {
-        paddingLeft: 'var(--cn-layout-xl)',
-        paddingTop: 'var(--cn-sidebar-group-py)',
-        paddingBottom: 'var(--cn-sidebar-group-py)',
-        gap: 'var(--cn-spacing-2)',
-        overflow: 'hidden',
-        '&[data-state="open"]': { '@apply animate-accordion-down': '' },
-        '&[data-state="closed"]': { '@apply animate-accordion-up': '' }
+        display: 'grid'
       },
 
       '&-item': {
@@ -466,7 +462,7 @@ export default {
 
     '&-drawer-content, &-drawer-overlay': {
       borderLeftWidth: '1px',
-      left: 'var(--cn-size-64) !important',
+      left: 'var(--cn-sidebar-container-full-width) !important',
       '&-collapsed': {
         left: 'var(--cn-size-16) !important'
       }
@@ -534,7 +530,7 @@ export default {
   },
 
   '.cn-sidebar-nested-popover': {
-    width: 'var(--cn-size-64)',
+    width: 'var(--cn-sidebar-container-full-width)',
     height: '100vh',
     borderRadius: '0 var(--cn-popover-radius) var(--cn-popover-radius) 0',
     ...descriptionIconStretch
